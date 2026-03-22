@@ -1,10 +1,10 @@
 namespace BehaviorTree
 {
-    public sealed class ActionNode : NodeBase
+    public sealed class ActionLeaf : NodeBase
     {
         private ActionBundle _bundle = null;
 
-        public ActionNode(ActionDefinition def)
+        public ActionLeaf(ActionDefinition def)
         {
             _bundle = new ActionBundle(
                 onStart: def.Start,
@@ -14,7 +14,7 @@ namespace BehaviorTree
                 onReset: def.Reset);
         }
 
-        public ActionNode(ActionBundle bundle)
+        public ActionLeaf(ActionBundle bundle)
         {
             _bundle = bundle;
         }

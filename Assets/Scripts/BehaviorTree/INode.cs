@@ -7,9 +7,13 @@ namespace BehaviorTree
         void Abort(BlackBoardMono bb);
     }
 
+    public interface ISelectable
+    {
+        bool IsSelectable();
+    }
     public interface ICondition
     {
-        bool Evaluate(BlackBoardMono bb, float dt);
+        bool Evaluate();
     }
 
     public enum NodeStatus
