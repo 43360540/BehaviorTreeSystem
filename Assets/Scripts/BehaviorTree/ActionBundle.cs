@@ -11,7 +11,7 @@ namespace BehaviorTree
         public Action OnReset { get; }
 
         public ActionBundle(Func<BlackBoardMono, float, NodeStatus> onTick, Action<BlackBoardMono> onStart = null,
-                                Action<BlackBoardMono> onStop = null, Action<BlackBoardMono> onAbort = null, Action onReset = null)
+                            Action<BlackBoardMono> onStop = null, Action<BlackBoardMono> onAbort = null, Action onReset = null)
         {
             OnStart = onStart;
             OnTick = onTick ?? throw new ArgumentNullException(nameof(onTick));

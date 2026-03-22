@@ -14,14 +14,13 @@ namespace BehaviorTree
             foreach (var c in Children)
             {
                 // Is child a ICondition
-                if (c is ICondition con)
+                if (c is ISelectable con)
                 {
                     // Evaluate whether child can enter
-                    if (con.Evaluate(bb, dt))
-                    {
+                    if (con.IsSelectable())
                         _activeChild = c;
-                    }
-                    continue;
+                    else
+                        continue;
                 }
                 else
                     _activeChild = c;
