@@ -2,25 +2,34 @@ using System;
 
 namespace BehaviorTree
 {
-    public class GuardDecorator : NodeBase, ISelectable
+    public class GuardDecorator<TContext> : NodeBase<TContext>, IGuard<TContext>
     {
-        private readonly Func<bool> _condition = null;
-        private readonly INode _child = null;
+        private readonly ICondition<TContext> _condition = null;
+        private readonly INode<TContext> _child = null;
 
-        public GuardDecorator(Func<bool> condition, INode child)
+        public GuardDecorator(Func<TContext, float, bool> condition, INode<TContext> child)
+        {
+            _child = child ?? throw new ArgumentNullException(nameof(child));
+            if (condition == null) 
+                throw new ArgumentNullException(nameof(condition));
+            _condition = new DelegateCondition<TContext>(condition);
+            
+        }
+
+        public GuardDecorator(ICondition<TContext> condition, INode<TContext> child)
         {
             _child = child ?? throw new ArgumentNullException(nameof(child));
             _condition = condition ?? throw new ArgumentNullException(nameof(condition));
         }
 
-        public bool IsSelectable()
+        public bool CanEnter(TContext bb, float dt)
         {
-            return _condition.Invoke();
+            return _condition.Evaluate(bb, dt);
         }
 
-        protected override NodeStatus OnTick(BlackBoardMono bb, float dt)
+        protected override NodeStatus OnTick(TContext bb, float dt)
         {
-            if (!_condition.Invoke())
+            if (!_condition.Evaluate(bb, dt))
             {
                 _child.Abort(bb);
                 return NodeStatus.Failure;
@@ -28,7 +37,7 @@ namespace BehaviorTree
             return _child.Tick(bb, dt);
         }
 
-        protected override void OnAbort(BlackBoardMono bb)
+        protected override void OnAbort(TContext bb)
         {
             base.OnAbort(bb);
             _child.Abort(bb);

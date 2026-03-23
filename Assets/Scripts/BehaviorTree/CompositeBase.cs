@@ -1,10 +1,10 @@
 namespace BehaviorTree
 {
-    public abstract class CompositeBase : NodeBase
+    public abstract class CompositeBase<TContext> : NodeBase<TContext>
     {
-        protected INode[] Children { get; }
+        protected INode<TContext>[] Children { get; }
 
-        protected CompositeBase(params INode[] children)
+        protected CompositeBase(params INode<TContext>[] children)
         {
             Children = children;
         }

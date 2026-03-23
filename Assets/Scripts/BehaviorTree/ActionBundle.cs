@@ -2,16 +2,16 @@ using System;
 
 namespace BehaviorTree
 {
-    public sealed class ActionBundle
+    public sealed class ActionBundle<TContext>
     {
-        public Action<BlackBoardMono> OnStart { get; }
-        public Func<BlackBoardMono, float, NodeStatus> OnTick { get; }
-        public Action<BlackBoardMono> OnStop { get; }
-        public Action<BlackBoardMono> OnAbort { get; }
+        public Action<TContext> OnStart { get; }
+        public Func<TContext, float, NodeStatus> OnTick { get; }
+        public Action<TContext> OnStop { get; }
+        public Action<TContext> OnAbort { get; }
         public Action OnReset { get; }
 
-        public ActionBundle(Func<BlackBoardMono, float, NodeStatus> onTick, Action<BlackBoardMono> onStart = null,
-                            Action<BlackBoardMono> onStop = null, Action<BlackBoardMono> onAbort = null, Action onReset = null)
+        public ActionBundle(Func<TContext, float, NodeStatus> onTick, Action<TContext> onStart = null,
+                            Action<TContext> onStop = null, Action<TContext> onAbort = null, Action onReset = null)
         {
             OnStart = onStart;
             OnTick = onTick ?? throw new ArgumentNullException(nameof(onTick));

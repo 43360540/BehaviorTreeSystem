@@ -1,19 +1,19 @@
 namespace BehaviorTree
 {
-    public interface INode
+    public interface INode<TContext>
     {
-        NodeStatus Tick(BlackBoardMono bb, float dt);
+        NodeStatus Tick(TContext bb, float dt);
         void Reset();
-        void Abort(BlackBoardMono bb);
+        void Abort(TContext bb);
     }
 
-    public interface ISelectable
+    public interface IGuard<TContext>
     {
-        bool IsSelectable();
+        bool CanEnter(TContext bb, float dt);
     }
-    public interface ICondition
+    public interface ICondition<TContext>
     {
-        bool Evaluate();
+        bool Evaluate(TContext bb, float dt);
     }
 
     public enum NodeStatus

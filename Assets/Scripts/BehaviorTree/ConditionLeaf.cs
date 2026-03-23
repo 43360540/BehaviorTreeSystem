@@ -2,23 +2,30 @@ using System;
 
 namespace BehaviorTree
 {
-    public class ConditionLeaf : NodeBase, ICondition
+    public class ConditionLeaf<TContext> : NodeBase<TContext>
     {
-        private readonly Func<bool> _condition = null;
+        private readonly ICondition<TContext> _condition = null;
+        
+        public ConditionLeaf(Func<TContext, float, bool> condition)
+        {
+            if (condition == null)
+                throw new ArgumentNullException(nameof(condition));
+            _condition = new DelegateCondition<TContext>(condition);
+        }
 
-        public ConditionLeaf(Func<bool> condition)
+        public ConditionLeaf(ICondition<TContext> condition)
         {
             _condition = condition ?? throw new ArgumentNullException(nameof(condition));
         }
 
-        public bool Evaluate()
+        public bool Evaluate(TContext bb, float dt)
         {
-            return _condition.Invoke();
+            return _condition.Evaluate(bb, dt);
         }
 
-        protected override NodeStatus OnTick(BlackBoardMono bb, float dt)
+        protected override NodeStatus OnTick(TContext bb, float dt)
         {
-            return Evaluate()? NodeStatus.Success : NodeStatus.Failure;
+            return Evaluate(bb, dt)? NodeStatus.Success : NodeStatus.Failure;
         }
     }
 }
