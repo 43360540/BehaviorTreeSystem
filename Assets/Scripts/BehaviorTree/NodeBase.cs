@@ -1,11 +1,11 @@
 namespace BehaviorTree
 {
-    public abstract class NodeBase : INode
+    public abstract class NodeBase<TContext> : INode<TContext>
     {
         private bool _started;
         public NodeStatus LastStatus { get; private set; } = NodeStatus.Failure;
 
-        public NodeStatus Tick(BlackBoardMono bb, float dt)
+        public NodeStatus Tick(TContext bb, float dt)
         {
             if (!_started)
             {
@@ -25,7 +25,7 @@ namespace BehaviorTree
             return status;
         }
 
-        public void Abort(BlackBoardMono bb)
+        public void Abort(TContext bb)
         {
             if (!_started)
                 return;
@@ -43,13 +43,13 @@ namespace BehaviorTree
             OnReset();
         }
 
-        protected abstract NodeStatus OnTick(BlackBoardMono bb, float dt);
+        protected abstract NodeStatus OnTick(TContext bb, float dt);
 
-        protected virtual void OnStart(BlackBoardMono bb) { }
+        protected virtual void OnStart(TContext bb) { }
 
-        protected virtual void OnStop(BlackBoardMono bb) { }
+        protected virtual void OnStop(TContext bb) { }
 
-        protected virtual void OnAbort(BlackBoardMono bb) { }
+        protected virtual void OnAbort(TContext bb) { }
 
         protected virtual void OnReset() { }
     }

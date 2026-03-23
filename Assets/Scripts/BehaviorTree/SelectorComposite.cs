@@ -1,12 +1,12 @@
 namespace BehaviorTree
 {
-    public sealed class SelectorNode : CompositeBase
+    public sealed class SelectorComposite<TContext> : CompositeBase<TContext>
     {
-        private INode _activeChild = null;
+        private INode<TContext> _activeChild = null;
 
-        public SelectorNode(params INode[] children) : base(children) { }
+        public SelectorComposite(params INode<TContext>[] children) : base(children) { }
 
-        protected override NodeStatus OnTick(BlackBoardMono bb, float dt)
+        protected override NodeStatus OnTick(TContext bb, float dt)
         {
             var prev = _activeChild;
             _activeChild = null;
@@ -14,10 +14,10 @@ namespace BehaviorTree
             foreach (var c in Children)
             {
                 // Is child a ICondition
-                if (c is ISelectable con)
+                if (c is IGuard<TContext> guard)
                 {
                     // Evaluate whether child can enter
-                    if (con.IsSelectable())
+                    if (guard.CanEnter(bb, dt))
                         _activeChild = c;
                     else
                         continue;
@@ -25,20 +25,26 @@ namespace BehaviorTree
                 else
                     _activeChild = c;
 
+        // ------------------------------------------------------------------
+
                 if (prev != null && prev != _activeChild)
                 {
                     prev.Abort(bb);
+                    prev = null;
                 }
 
                 var status = _activeChild.Tick(bb, dt);
 
+                if (status == NodeStatus.Failure)
+                    continue;
+
                 return status;
             }
-
+            prev?.Abort(bb);
             return NodeStatus.Failure;
         }
 
-        protected override void OnStop(BlackBoardMono bb)
+        protected override void OnStop(TContext bb)
         {
             base.OnStop(bb);
 
@@ -52,7 +58,7 @@ namespace BehaviorTree
             _activeChild = null;
         }
 
-        protected override void OnAbort(BlackBoardMono bb)
+        protected override void OnAbort(TContext bb)
         {
             base.OnAbort(bb);
 

@@ -1,19 +1,19 @@
 namespace BehaviorTree
 {
-    public sealed class SequenceNode : CompositeBase
+    public sealed class SequenceComposite<TContext> : CompositeBase<TContext>
     {
         private int _index = 0;
 
-        public SequenceNode(params INode[] children) : base(children) { }
+        public SequenceComposite(params INode<TContext>[] children) : base(children) { }
 
-        protected override void OnStart(BlackBoardMono bb)
+        protected override void OnStart(TContext bb)
         {
             base.OnStart(bb);
 
             _index = 0;
         }
 
-        protected override NodeStatus OnTick(BlackBoardMono bb, float dt)
+        protected override NodeStatus OnTick(TContext bb, float dt)
         {
             while (_index < Children.Length)
             {
@@ -26,7 +26,7 @@ namespace BehaviorTree
             return NodeStatus.Success;
         }
 
-        protected override void OnAbort(BlackBoardMono bb)
+        protected override void OnAbort(TContext bb)
         {
             base.OnAbort(bb);
 
@@ -41,7 +41,7 @@ namespace BehaviorTree
             _index = 0;
         }
 
-        protected override void OnStop(BlackBoardMono bb)
+        protected override void OnStop(TContext bb)
         {
             base.OnStop(bb);
 

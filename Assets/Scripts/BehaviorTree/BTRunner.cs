@@ -11,7 +11,7 @@ namespace BehaviorTree
 
         private List<INode> _children = new();
 
-        private SelectorNode _root = null;
+        private SelectorComposite _root = null;
 
         private void Awake()
         {
@@ -20,7 +20,7 @@ namespace BehaviorTree
                 _children.Add(c.GetComponent<INode>());
             }
 
-            _root = new SelectorNode(_children.ToArray());
+            _root = new SelectorComposite(_children.ToArray());
         }
 
         private void Start()

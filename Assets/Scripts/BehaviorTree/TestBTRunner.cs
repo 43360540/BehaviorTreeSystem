@@ -15,7 +15,7 @@ namespace BehaviorTree
         private void Awake()
         {
             _root =
-            new SelectorNode();
+            new SelectorComposite();
         }
 
         private void Update()
