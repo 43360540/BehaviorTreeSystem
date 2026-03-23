@@ -9,19 +9,19 @@ namespace BehaviorTree
         [SerializeField] private NodeStatus _status = NodeStatus.Failure;
         [SerializeField] private BlackBoardMono _bb = null;
 
-        private float _time = 0;
-        private INode _root = null;
+        // private float _time = 0;
+        // private INode _root = null;
 
-        private void Awake()
-        {
-            _root =
-            new SelectorComposite();
-        }
+        // private void Awake()
+        // {
+        //     _root =
+        //     new SelectorComposite();
+        // }
 
-        private void Update()
-        {
-            _time = Time.deltaTime;
-            _status = _root.Tick(_bb, _time);
-        }
+        // private void Update()
+        // {
+        //     _time = Time.deltaTime;
+        //     _status = _root.Tick(_bb, _time);
+        // }
     }
 }
