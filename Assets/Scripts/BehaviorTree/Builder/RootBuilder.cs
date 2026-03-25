@@ -28,6 +28,9 @@ namespace BehaviorTree
             _root = builder.Build();
         }
 
-        public INode<TContext> Build() => _root;
+        public INode<TContext> Build()
+        {
+            return _root ?? throw new InvalidOperationException("Root node cannot be null.");
+        }
     }
 }

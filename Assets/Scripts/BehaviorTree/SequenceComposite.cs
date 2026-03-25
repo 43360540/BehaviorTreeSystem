@@ -41,9 +41,9 @@ namespace BehaviorTree
             _index = 0;
         }
 
-        protected override void OnStop(TContext bb)
+        protected override void OnStop(TContext bb, NodeStatus stopStatus)
         {
-            base.OnStop(bb);
+            base.OnStop(bb, LastStatus);
 
             _index = 0;
         }

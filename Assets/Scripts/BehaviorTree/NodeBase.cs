@@ -18,7 +18,7 @@ namespace BehaviorTree
 
             if (LastStatus != NodeStatus.Running)
             {
-                OnStop(bb);
+                OnStop(bb, LastStatus);
                 _started = false;
             }
 
@@ -47,7 +47,7 @@ namespace BehaviorTree
 
         protected virtual void OnStart(TContext bb) { }
 
-        protected virtual void OnStop(TContext bb) { }
+        protected virtual void OnStop(TContext bb, NodeStatus stopStatus) { }
 
         protected virtual void OnAbort(TContext bb) { }
 
