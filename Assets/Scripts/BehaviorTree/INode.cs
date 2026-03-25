@@ -3,7 +3,7 @@ namespace BehaviorTree
     public interface INode<TContext>
     {
         NodeStatus Tick(TContext ctx, float dt);
-        void Reset();
+        void HardReset();
         void Abort(TContext ctx);
     }
 
