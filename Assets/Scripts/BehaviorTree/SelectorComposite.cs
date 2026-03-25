@@ -1,5 +1,6 @@
 namespace BehaviorTree
 {
+    // Reactive Selector
     public sealed class SelectorComposite<TContext> : CompositeBase<TContext>
     {
         private INode<TContext> _activeChild = null;
@@ -44,25 +45,17 @@ namespace BehaviorTree
             return NodeStatus.Failure;
         }
 
-        protected override void OnStop(TContext bb, NodeStatus stopStatus)
+        protected override void OnAbort(TContext bb)
         {
-            base.OnStop(bb, LastStatus);
+            base.OnAbort(bb);
 
-            _activeChild = null;
+            _activeChild?.Abort(bb);
         }
 
         protected override void OnReset()
         {
             base.OnReset();
 
-            _activeChild = null;
-        }
-
-        protected override void OnAbort(TContext bb)
-        {
-            base.OnAbort(bb);
-
-            _activeChild?.Abort(bb);
             _activeChild = null;
         }
     }

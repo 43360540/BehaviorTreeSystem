@@ -1,3 +1,5 @@
+using System;
+
 namespace BehaviorTree
 {
     public abstract class CompositeBase<TContext> : NodeBase<TContext>
@@ -6,7 +8,10 @@ namespace BehaviorTree
 
         protected CompositeBase(params INode<TContext>[] children)
         {
-            Children = children;
+            if (Array.Exists(children, c => c == null))
+                throw new ArgumentException("Children cannot contain null.", nameof(children));
+
+            Children = (INode<TContext>[])children.Clone();
         }
 
         public override void Reset()

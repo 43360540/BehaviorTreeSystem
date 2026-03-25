@@ -1,22 +1,27 @@
+using System;
+
 namespace BehaviorTree
 {
     public sealed class ActionLeaf<TContext> : NodeBase<TContext>
     {
         private ActionBundle<TContext> _bundle = null;
 
-        public ActionLeaf(BTAction<TContext> def)
+        public ActionLeaf(BTAction<TContext> action)
         {
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
             _bundle = new ActionBundle<TContext>(
-                onStart: def.Start,
-                onTick: def.Tick,
-                onStop: def.Stop,
-                onAbort: def.Abort,
-                onReset: def.Reset);
+                onStart: action.Start,
+                onTick: action.Tick,
+                onStop: action.Stop,
+                onAbort: action.Abort,
+                onReset: action.Reset);
         }
 
         public ActionLeaf(ActionBundle<TContext> bundle)
         {
-            _bundle = bundle;
+            _bundle = bundle ?? throw new ArgumentNullException(nameof(bundle));
         }
 
         protected override void OnStart(TContext bb)
@@ -32,8 +37,8 @@ namespace BehaviorTree
 
         protected override void OnStop(TContext bb, NodeStatus stopStatus)
         {
-            base.OnStop(bb, LastStatus);
-            _bundle.OnStop?.Invoke(bb);
+            base.OnStop(bb, stopStatus);
+            _bundle.OnStop?.Invoke(bb, stopStatus);
         }
 
         protected override void OnAbort(TContext bb)

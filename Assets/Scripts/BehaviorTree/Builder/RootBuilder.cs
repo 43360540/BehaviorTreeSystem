@@ -8,6 +8,9 @@ namespace BehaviorTree
 
         public void Selector(Action<SelectorCompositeBuilder<TContext>> buildAction)
         {
+            if (buildAction == null)
+                throw new ArgumentNullException(nameof(buildAction));
+
             if (_root != null)
                 throw new InvalidOperationException("Root node already set.");
 
@@ -19,6 +22,9 @@ namespace BehaviorTree
 
         public void Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
         {
+            if (buildAction == null)
+                throw new ArgumentNullException(nameof(buildAction));
+                
             if (_root != null)
                 throw new InvalidOperationException("Root node already set.");
 

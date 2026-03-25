@@ -1,5 +1,6 @@
 namespace BehaviorTree
 {
+    // Memory Sequence
     public sealed class SequenceComposite<TContext> : CompositeBase<TContext>
     {
         private int _index = 0;
@@ -19,11 +20,18 @@ namespace BehaviorTree
             {
                 var status = Children[_index].Tick(bb, dt);
 
-                if (status == NodeStatus.Failure || status == NodeStatus.Running)
+                if (status != NodeStatus.Success)
                     return status;
                 _index++;
             }
             return NodeStatus.Success;
+        }
+
+        protected override void OnStop(TContext bb, NodeStatus stopStatus)
+        {
+            base.OnStop(bb, stopStatus);
+
+            _index = 0;
         }
 
         protected override void OnAbort(TContext bb)
@@ -39,13 +47,6 @@ namespace BehaviorTree
             base.OnReset();
 
             _index = 0;
-        }
-
-        protected override void OnStop(TContext bb, NodeStatus stopStatus)
-        {
-            base.OnStop(bb, LastStatus);
-
-            _index = 0;
-        }
+        }  
     }
 }

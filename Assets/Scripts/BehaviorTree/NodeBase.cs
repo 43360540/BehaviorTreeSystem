@@ -1,25 +1,30 @@
+using System;
+
 namespace BehaviorTree
 {
     public abstract class NodeBase<TContext> : INode<TContext>
     {
-        private bool _started;
-        public NodeStatus LastStatus { get; private set; } = NodeStatus.Failure;
+        public NodeStatus LastStatus { get; private set; } = NodeStatus.None;
 
         public NodeStatus Tick(TContext bb, float dt)
         {
-            if (!_started)
+            if (LastStatus == NodeStatus.None)
             {
-                _started = true;
+                LastStatus = NodeStatus.Running;
                 OnStart(bb);
             }
 
             var status = OnTick(bb, dt);
+            if (status == NodeStatus.None)
+                throw new InvalidOperationException("Node cannot return NodeStatus.None from OnTick.");
             LastStatus = status;
 
             if (LastStatus != NodeStatus.Running)
             {
                 OnStop(bb, LastStatus);
-                _started = false;
+
+                LastStatus = NodeStatus.None;
+                OnReset();
             }
 
             return status;
@@ -27,18 +32,17 @@ namespace BehaviorTree
 
         public void Abort(TContext bb)
         {
-            if (!_started)
+            if (LastStatus == NodeStatus.None)
                 return;
-            _started = false;
-            LastStatus = NodeStatus.Failure;
-
             OnAbort(bb);
+
+            LastStatus = NodeStatus.None;
+            OnReset();
         }
 
         public virtual void Reset()
         {
-            _started = false;
-            LastStatus = NodeStatus.Failure;
+            LastStatus = NodeStatus.None;
 
             OnReset();
         }
