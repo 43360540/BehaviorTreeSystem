@@ -6,22 +6,22 @@ namespace BehaviorTree
     {
         public NodeStatus LastStatus { get; private set; } = NodeStatus.None;
 
-        public NodeStatus Tick(TContext bb, float dt)
+        public NodeStatus Tick(TContext ctx, float dt)
         {
             if (LastStatus == NodeStatus.None)
             {
                 LastStatus = NodeStatus.Running;
-                OnStart(bb);
+                OnStart(ctx);
             }
 
-            var status = OnTick(bb, dt);
+            var status = OnTick(ctx, dt);
             if (status == NodeStatus.None)
                 throw new InvalidOperationException("Node cannot return NodeStatus.None from OnTick.");
             LastStatus = status;
 
             if (LastStatus != NodeStatus.Running)
             {
-                OnStop(bb, LastStatus);
+                OnStop(ctx, LastStatus);
 
                 LastStatus = NodeStatus.None;
                 OnReset();
@@ -30,11 +30,11 @@ namespace BehaviorTree
             return status;
         }
 
-        public void Abort(TContext bb)
+        public void Abort(TContext ctx)
         {
             if (LastStatus == NodeStatus.None)
                 return;
-            OnAbort(bb);
+            OnAbort(ctx);
 
             LastStatus = NodeStatus.None;
             OnReset();
@@ -47,13 +47,13 @@ namespace BehaviorTree
             OnReset();
         }
 
-        protected abstract NodeStatus OnTick(TContext bb, float dt);
+        protected abstract NodeStatus OnTick(TContext ctx, float dt);
 
-        protected virtual void OnStart(TContext bb) { }
+        protected virtual void OnStart(TContext ctx) { }
 
-        protected virtual void OnStop(TContext bb, NodeStatus stopStatus) { }
+        protected virtual void OnStop(TContext ctx, NodeStatus stopStatus) { }
 
-        protected virtual void OnAbort(TContext bb) { }
+        protected virtual void OnAbort(TContext ctx) { }
 
         protected virtual void OnReset() { }
     }

@@ -24,27 +24,27 @@ namespace BehaviorTree
             _bundle = bundle ?? throw new ArgumentNullException(nameof(bundle));
         }
 
-        protected override void OnStart(TContext bb)
+        protected override void OnStart(TContext ctx)
         {
-            base.OnStart(bb);
-            _bundle.OnStart?.Invoke(bb);
+            base.OnStart(ctx);
+            _bundle.OnStart?.Invoke(ctx);
         }
 
-        protected override NodeStatus OnTick(TContext bb, float dt)
+        protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            return _bundle.OnTick.Invoke(bb, dt);
+            return _bundle.OnTick.Invoke(ctx, dt);
         }
 
-        protected override void OnStop(TContext bb, NodeStatus stopStatus)
+        protected override void OnStop(TContext ctx, NodeStatus stopStatus)
         {
-            base.OnStop(bb, stopStatus);
-            _bundle.OnStop?.Invoke(bb, stopStatus);
+            base.OnStop(ctx, stopStatus);
+            _bundle.OnStop?.Invoke(ctx, stopStatus);
         }
 
-        protected override void OnAbort(TContext bb)
+        protected override void OnAbort(TContext ctx)
         {
-            base.OnAbort(bb);
-            _bundle.OnAbort?.Invoke(bb);
+            base.OnAbort(ctx);
+            _bundle.OnAbort?.Invoke(ctx);
         }
 
         protected override void OnReset()

@@ -22,25 +22,25 @@ namespace BehaviorTree
             _condition = condition ?? throw new ArgumentNullException(nameof(condition));
         }
 
-        public bool CanEnter(TContext bb, float dt)
+        public bool CanEnter(TContext ctx, float dt)
         {
-            return _condition.Evaluate(bb, dt);
+            return _condition.Evaluate(ctx, dt);
         }
 
-        protected override NodeStatus OnTick(TContext bb, float dt)
+        protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            if (!_condition.Evaluate(bb, dt))
+            if (!_condition.Evaluate(ctx, dt))
             {
-                _child.Abort(bb);
+                _child.Abort(ctx);
                 return NodeStatus.Failure;
             }
-            return _child.Tick(bb, dt);
+            return _child.Tick(ctx, dt);
         }
 
-        protected override void OnAbort(TContext bb)
+        protected override void OnAbort(TContext ctx)
         {
-            base.OnAbort(bb);
-            _child.Abort(bb);
+            base.OnAbort(ctx);
+            _child.Abort(ctx);
         }
 
         protected override void OnReset()
