@@ -18,6 +18,7 @@ namespace BehaviorTree
 
     public enum NodeStatus
     {
+        None,
         Success,
         Running,
         Failure,

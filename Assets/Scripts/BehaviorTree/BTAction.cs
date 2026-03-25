@@ -6,7 +6,7 @@ namespace BehaviorTree
 
         public abstract NodeStatus Tick(TContext bb, float dt);
 
-        public virtual void Stop(TContext bb) { }
+        public virtual void Stop(TContext bb, NodeStatus stopStatus) { }
 
         public virtual void Abort(TContext bb) { }
 
