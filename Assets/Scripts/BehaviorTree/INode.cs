@@ -2,18 +2,18 @@ namespace BehaviorTree
 {
     public interface INode<TContext>
     {
-        NodeStatus Tick(TContext bb, float dt);
+        NodeStatus Tick(TContext ctx, float dt);
         void Reset();
-        void Abort(TContext bb);
+        void Abort(TContext ctx);
     }
 
     public interface IGuard<TContext>
     {
-        bool CanEnter(TContext bb, float dt);
+        bool CanEnter(TContext ctx, float dt);
     }
     public interface ICondition<TContext>
     {
-        bool Evaluate(TContext bb, float dt);
+        bool Evaluate(TContext ctx, float dt);
     }
 
     public enum NodeStatus
