@@ -30,9 +30,9 @@ namespace BehaviorTree
             return _bundle.OnTick.Invoke(bb, dt);
         }
 
-        protected override void OnStop(TContext bb)
+        protected override void OnStop(TContext bb, NodeStatus stopStatus)
         {
-            base.OnStop(bb);
+            base.OnStop(bb, LastStatus);
             _bundle.OnStop?.Invoke(bb);
         }
 

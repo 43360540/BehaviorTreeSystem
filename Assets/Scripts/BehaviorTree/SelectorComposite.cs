@@ -44,9 +44,9 @@ namespace BehaviorTree
             return NodeStatus.Failure;
         }
 
-        protected override void OnStop(TContext bb)
+        protected override void OnStop(TContext bb, NodeStatus stopStatus)
         {
-            base.OnStop(bb);
+            base.OnStop(bb, LastStatus);
 
             _activeChild = null;
         }
