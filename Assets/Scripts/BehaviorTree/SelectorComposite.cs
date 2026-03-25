@@ -7,7 +7,7 @@ namespace BehaviorTree
 
         public SelectorComposite(params INode<TContext>[] children) : base(children) { }
 
-        protected override NodeStatus OnTick(TContext bb, float dt)
+        protected override NodeStatus OnTick(TContext ctx, float dt)
         {
             var prev = _activeChild;
             _activeChild = null;
@@ -18,7 +18,7 @@ namespace BehaviorTree
                 if (c is IGuard<TContext> guard)
                 {
                     // Evaluate whether child can enter
-                    if (guard.CanEnter(bb, dt))
+                    if (guard.CanEnter(ctx, dt))
                         _activeChild = c;
                     else
                         continue;
@@ -30,26 +30,26 @@ namespace BehaviorTree
 
                 if (prev != null && prev != _activeChild)
                 {
-                    prev.Abort(bb);
+                    prev.Abort(ctx);
                     prev = null;
                 }
 
-                var status = _activeChild.Tick(bb, dt);
+                var status = _activeChild.Tick(ctx, dt);
 
                 if (status == NodeStatus.Failure)
                     continue;
 
                 return status;
             }
-            prev?.Abort(bb);
+            prev?.Abort(ctx);
             return NodeStatus.Failure;
         }
 
-        protected override void OnAbort(TContext bb)
+        protected override void OnAbort(TContext ctx)
         {
-            base.OnAbort(bb);
+            base.OnAbort(ctx);
 
-            _activeChild?.Abort(bb);
+            _activeChild?.Abort(ctx);
         }
 
         protected override void OnReset()

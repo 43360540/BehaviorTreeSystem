@@ -7,18 +7,18 @@ namespace BehaviorTree
 
         public SequenceComposite(params INode<TContext>[] children) : base(children) { }
 
-        protected override void OnStart(TContext bb)
+        protected override void OnStart(TContext ctx)
         {
-            base.OnStart(bb);
+            base.OnStart(ctx);
 
             _index = 0;
         }
 
-        protected override NodeStatus OnTick(TContext bb, float dt)
+        protected override NodeStatus OnTick(TContext ctx, float dt)
         {
             while (_index < Children.Length)
             {
-                var status = Children[_index].Tick(bb, dt);
+                var status = Children[_index].Tick(ctx, dt);
 
                 if (status != NodeStatus.Success)
                     return status;
@@ -27,19 +27,19 @@ namespace BehaviorTree
             return NodeStatus.Success;
         }
 
-        protected override void OnStop(TContext bb, NodeStatus stopStatus)
+        protected override void OnStop(TContext ctx, NodeStatus stopStatus)
         {
-            base.OnStop(bb, stopStatus);
+            base.OnStop(ctx, stopStatus);
 
             _index = 0;
         }
 
-        protected override void OnAbort(TContext bb)
+        protected override void OnAbort(TContext ctx)
         {
-            base.OnAbort(bb);
+            base.OnAbort(ctx);
 
             if (_index >= 0 && _index < Children.Length)
-                Children[_index].Abort(bb);
+                Children[_index].Abort(ctx);
         }
 
         protected override void OnReset()

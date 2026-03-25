@@ -18,14 +18,14 @@ namespace BehaviorTree
             _condition = condition ?? throw new ArgumentNullException(nameof(condition));
         }
 
-        public bool Evaluate(TContext bb, float dt)
+        public bool Evaluate(TContext ctx, float dt)
         {
-            return _condition.Evaluate(bb, dt);
+            return _condition.Evaluate(ctx, dt);
         }
 
-        protected override NodeStatus OnTick(TContext bb, float dt)
+        protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            return Evaluate(bb, dt)? NodeStatus.Success : NodeStatus.Failure;
+            return Evaluate(ctx, dt)? NodeStatus.Success : NodeStatus.Failure;
         }
     }
 }

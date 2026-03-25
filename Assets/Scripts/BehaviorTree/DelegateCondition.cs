@@ -11,9 +11,9 @@ namespace BehaviorTree
             _predicate = predicate ?? throw new ArgumentNullException(nameof(predicate));
         }
 
-        public bool Evaluate(TContext bb, float dt)
+        public bool Evaluate(TContext ctx, float dt)
         {
-            return _predicate.Invoke(bb, dt);
+            return _predicate.Invoke(ctx, dt);
         }
     }
 }
