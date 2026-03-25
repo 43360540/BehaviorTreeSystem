@@ -4,6 +4,5 @@ namespace BehaviorTree
     {
         protected override INode<TContext> CreateComposite(INode<TContext>[] children) =>
             new SequenceComposite<TContext>(children);
-        
     }
 }

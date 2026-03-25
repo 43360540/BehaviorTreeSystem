@@ -48,14 +48,12 @@ namespace BehaviorTree
         protected override void OnAbort(TContext ctx)
         {
             base.OnAbort(ctx);
-
             _activeChild?.Abort(ctx);
         }
 
         protected override void OnReset()
         {
             base.OnReset();
-
             _activeChild = null;
         }
     }

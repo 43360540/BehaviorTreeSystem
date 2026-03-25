@@ -44,27 +44,29 @@ namespace BehaviorTree
             return Self;
         }
 
-        public TSelf Guard(ICondition<TContext> predicate, BTAction<TContext> action)
+        public TSelf Guard(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-            else if (predicate == null)
-                throw new ArgumentNullException(nameof(predicate));
-            
-            var actionLeaf = new ActionLeaf<TContext>(action);
-            Children.Add(new GuardDecorator<TContext>(predicate, actionLeaf));
+            if (condition == null)
+                throw new ArgumentNullException(nameof(condition));
+            else if (buildAction == null)
+                throw new ArgumentNullException(nameof(buildAction));
+
+            var builder = new GuardDecoratorBuilder<TContext>(condition);
+            buildAction(builder);
+            Children.Add(builder.Build());
             return Self;
         }
 
-        public TSelf Guard(Func<TContext, float, bool> predicate, BTAction<TContext> action)
+        public TSelf Guard(Func<TContext, float, bool> predicate, Action<GuardDecoratorBuilder<TContext>> buildAction)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-            else if (predicate == null)
+            if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));
+            else if (buildAction == null)
+                throw new ArgumentNullException(nameof(buildAction));
 
-            var actionLeaf = new ActionLeaf<TContext>(action);
-            Children.Add(new GuardDecorator<TContext>(predicate, actionLeaf));
+            var builder = new GuardDecoratorBuilder<TContext>(predicate);
+            buildAction(builder);
+            Children.Add(builder.Build());
             return Self;
         }
 
@@ -84,7 +86,7 @@ namespace BehaviorTree
         {
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
-                
+
             var builder = new SequenceCompositeBuilder<TContext>();
             buildAction(builder);
             Children.Add(builder.Build());
@@ -94,6 +96,12 @@ namespace BehaviorTree
 
         protected abstract INode<TContext> CreateComposite(INode<TContext>[] children);
 
-        public INode<TContext> Build() => CreateComposite(Children.ToArray());
+        public INode<TContext> Build() 
+        {
+            if (Children == null || Children.Exists(c => c == null))
+                throw new InvalidOperationException("Composite node cannot be null or contains null.");
+
+            return CreateComposite(Children.ToArray());
+        }
     }
 }

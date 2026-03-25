@@ -10,8 +10,8 @@ namespace BehaviorTree
         {
             if (LastStatus == NodeStatus.None)
             {
-                LastStatus = NodeStatus.Running;
                 OnStart(ctx);
+                LastStatus = NodeStatus.Running;
             }
 
             var status = OnTick(ctx, dt);
@@ -22,9 +22,7 @@ namespace BehaviorTree
             if (LastStatus != NodeStatus.Running)
             {
                 OnStop(ctx, LastStatus);
-
-                LastStatus = NodeStatus.None;
-                OnReset();
+                SelfReset();
             }
 
             return status;
@@ -35,16 +33,14 @@ namespace BehaviorTree
             if (LastStatus == NodeStatus.None)
                 return;
             OnAbort(ctx);
-
-            LastStatus = NodeStatus.None;
-            OnReset();
+            SelfReset();            
         }
 
-        public virtual void Reset()
+        public virtual void HardReset()
         {
-            LastStatus = NodeStatus.None;
-
-            OnReset();
+            if (LastStatus == NodeStatus.None)
+                return;
+            SelfReset();
         }
 
         protected abstract NodeStatus OnTick(TContext ctx, float dt);
@@ -56,5 +52,11 @@ namespace BehaviorTree
         protected virtual void OnAbort(TContext ctx) { }
 
         protected virtual void OnReset() { }
+
+        private void SelfReset()
+        {
+            LastStatus = NodeStatus.None;
+            OnReset();
+        }
     }
 }

@@ -27,13 +27,6 @@ namespace BehaviorTree
             return NodeStatus.Success;
         }
 
-        protected override void OnStop(TContext ctx, NodeStatus stopStatus)
-        {
-            base.OnStop(ctx, stopStatus);
-
-            _index = 0;
-        }
-
         protected override void OnAbort(TContext ctx)
         {
             base.OnAbort(ctx);
@@ -47,6 +40,6 @@ namespace BehaviorTree
             base.OnReset();
 
             _index = 0;
-        }  
+        }
     }
 }

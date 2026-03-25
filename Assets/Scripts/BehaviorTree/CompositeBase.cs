@@ -8,18 +8,21 @@ namespace BehaviorTree
 
         protected CompositeBase(params INode<TContext>[] children)
         {
+            if (children == null)
+                throw new ArgumentNullException(nameof(children));
+
             if (Array.Exists(children, c => c == null))
                 throw new ArgumentException("Children cannot contain null.", nameof(children));
 
             Children = (INode<TContext>[])children.Clone();
         }
 
-        public override void Reset()
+        public override void HardReset()
         {
-            base.Reset();
+            base.HardReset();
 
             foreach (var c in Children)
-                c.Reset();
+                c.HardReset();
         }
     }
 }
