@@ -2,8 +2,7 @@ using System;
 
 namespace BehaviorTree
 {
-    public sealed class GuardDecoratorBuilder<TContext> : 
-                        DecoratorBuilderBase<ICondition<TContext>, TContext>
+    public sealed class GuardDecoratorBuilder<TContext> :  DecoratorBuilderBase<ICondition<TContext>, TContext>
     {
         public GuardDecoratorBuilder(ICondition<TContext> condition) : base(condition){}
 
