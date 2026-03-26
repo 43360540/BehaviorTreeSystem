@@ -5,16 +5,15 @@ namespace BehaviorTree
 {
     public abstract class CompositeBuilderBase<TContext, TSelf> where TSelf : CompositeBuilderBase<TContext, TSelf>
     {
-        protected readonly List<INode<TContext>> Children = new();
-        protected TSelf Self => (TSelf)this;
+        private readonly List<INode<TContext>> _children = new();
+        private TSelf Self => (TSelf)this;
 
         public TSelf Condition(ICondition<TContext> predicate)
         {
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));
 
-            Children.Add(new ConditionLeaf<TContext>(predicate));
-            return Self;
+            return Node(new ConditionLeaf<TContext>(predicate));
         }
 
         public TSelf Condition(Func<TContext, float, bool> predicate)
@@ -22,8 +21,7 @@ namespace BehaviorTree
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));
 
-            Children.Add(new ConditionLeaf<TContext>(predicate));
-            return Self;
+            return Node(new ConditionLeaf<TContext>(predicate));
         }
 
         public TSelf Action(BTAction<TContext> action)
@@ -31,8 +29,7 @@ namespace BehaviorTree
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            Children.Add(new ActionLeaf<TContext>(action));
-            return Self;
+            return Node(new ActionLeaf<TContext>(action));
         }
 
         public TSelf Action(ActionBundle<TContext> action)
@@ -40,8 +37,7 @@ namespace BehaviorTree
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            Children.Add(new ActionLeaf<TContext>(action));
-            return Self;
+            return Node(new ActionLeaf<TContext>(action));
         }
 
         public TSelf Guard(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
@@ -53,8 +49,8 @@ namespace BehaviorTree
 
             var builder = new GuardDecoratorBuilder<TContext>(condition);
             buildAction(builder);
-            Children.Add(builder.Build());
-            return Self;
+
+            return Node(builder.Build());
         }
 
         public TSelf Guard(Func<TContext, float, bool> predicate, Action<GuardDecoratorBuilder<TContext>> buildAction)
@@ -66,8 +62,8 @@ namespace BehaviorTree
 
             var builder = new GuardDecoratorBuilder<TContext>(predicate);
             buildAction(builder);
-            Children.Add(builder.Build());
-            return Self;
+
+            return Node(builder.Build());
         }
 
         public TSelf Selector(Action<SelectorCompositeBuilder<TContext>> buildAction)
@@ -77,9 +73,8 @@ namespace BehaviorTree
 
             var builder = new SelectorCompositeBuilder<TContext>();
             buildAction(builder);
-            Children.Add(builder.Build());
 
-            return Self;
+            return Node(builder.Build());
         }
 
         public TSelf Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
@@ -89,8 +84,16 @@ namespace BehaviorTree
 
             var builder = new SequenceCompositeBuilder<TContext>();
             buildAction(builder);
-            Children.Add(builder.Build());
 
+            return Node(builder.Build());
+        }
+
+        public TSelf Node(INode<TContext> node)
+        {
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+            
+            _children.Add(node);
             return Self;
         }
 
@@ -98,10 +101,10 @@ namespace BehaviorTree
 
         public INode<TContext> Build() 
         {
-            if (Children == null || Children.Exists(c => c == null))
+            if (_children.Exists(c => c == null))
                 throw new InvalidOperationException("Composite node cannot be null or contains null.");
 
-            return CreateComposite(Children.ToArray());
+            return CreateComposite(_children.ToArray());
         }
     }
 }
