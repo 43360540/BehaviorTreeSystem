@@ -88,6 +88,17 @@ namespace BehaviorTree
             return Node(builder.Build());
         }
 
+        public TSelf Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
+        {
+            if (buildAction == null)
+                throw new ArgumentNullException(nameof(buildAction));
+
+            var builder = new ParallelCompositeBuilder<TContext>();
+            buildAction(builder);
+
+            return Node(builder.Build());
+        }
+
         public TSelf Node(INode<TContext> node)
         {
             if (node == null)

@@ -16,13 +16,5 @@ namespace BehaviorTree
 
             Children = (INode<TContext>[])children.Clone();
         }
-
-        public override void HardReset()
-        {
-            base.HardReset();
-
-            foreach (var c in Children)
-                c.HardReset();
-        }
     }
 }

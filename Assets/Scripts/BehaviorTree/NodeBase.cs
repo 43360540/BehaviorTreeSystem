@@ -36,13 +36,6 @@ namespace BehaviorTree
             SelfReset();            
         }
 
-        public virtual void HardReset()
-        {
-            if (LastStatus == NodeStatus.None)
-                return;
-            SelfReset();
-        }
-
         protected abstract NodeStatus OnTick(TContext ctx, float dt);
 
         protected virtual void OnStart(TContext ctx) { }
