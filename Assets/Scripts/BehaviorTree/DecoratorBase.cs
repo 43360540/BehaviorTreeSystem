@@ -16,11 +16,5 @@ namespace BehaviorTree
             base.OnAbort(ctx);
             Child.Abort(ctx);
         }
-
-        public override void HardReset()
-        {
-            base.HardReset();
-            Child.HardReset();
-        }
     }
 }

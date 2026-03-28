@@ -50,6 +50,18 @@ namespace BehaviorTree
             Node(builder.Build());
         }
 
+        public void Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
+        {
+            if (buildAction == null)
+                throw new ArgumentNullException(nameof(buildAction));
+
+
+            var builder = new ParallelCompositeBuilder<TContext>();
+            buildAction(builder);
+
+            Node(builder.Build());
+        }
+
         public void Node(INode<TContext> node)
         {
             if (_child != null)
