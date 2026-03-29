@@ -24,15 +24,7 @@ namespace BehaviorTree
             return Node(new ConditionLeaf<TContext>(predicate));
         }
 
-        public TSelf Action(BTAction<TContext> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            return Node(new ActionLeaf<TContext>(action));
-        }
-
-        public TSelf Action(ActionBundle<TContext> action)
+        public TSelf Action(ActionBase<TContext> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));

@@ -4,7 +4,7 @@ namespace BehaviorTree
 {
     public abstract class DecoratorBase<TContext> : NodeBase<TContext>
     {
-        protected INode<TContext> Child;
+        protected INode<TContext> Child { get; }
 
         public DecoratorBase(INode<TContext> child)
         {

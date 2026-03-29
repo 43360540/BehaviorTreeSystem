@@ -4,53 +4,27 @@ namespace BehaviorTree
 {
     public sealed class ActionLeaf<TContext> : NodeBase<TContext>
     {
-        private ActionBundle<TContext> _bundle = null;
+        private ActionBase<TContext> _action;
 
-        public ActionLeaf(BTAction<TContext> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
+        public ActionLeaf(ActionBase<TContext> action) =>
+            _action = action ?? throw new ArgumentNullException(nameof(action));
 
-            _bundle = new ActionBundle<TContext>(
-                onStart: action.Start,
-                onTick: action.Tick,
-                onStop: action.Stop,
-                onAbort: action.Abort,
-                onReset: action.Reset);
-        }
+        // public ActionLeaf(QuickAction<TContext> qAction) =>
+        //     _action = qAction ?? throw new ArgumentNullException(nameof(qAction));
 
-        public ActionLeaf(ActionBundle<TContext> bundle)
-        {
-            _bundle = bundle ?? throw new ArgumentNullException(nameof(bundle));
-        }
+        protected override void OnStart(TContext ctx) =>
+            _action.Start(ctx);
 
-        protected override void OnStart(TContext ctx)
-        {
-            base.OnStart(ctx);
-            _bundle.OnStart?.Invoke(ctx);
-        }
+        protected override NodeStatus OnTick(TContext ctx, float dt) =>
+            _action.Tick(ctx, dt);
 
-        protected override NodeStatus OnTick(TContext ctx, float dt)
-        {
-            return _bundle.OnTick.Invoke(ctx, dt);
-        }
+        protected override void OnStop(TContext ctx, NodeStatus stopStatus) =>
+            _action.Stop(ctx, stopStatus);
 
-        protected override void OnStop(TContext ctx, NodeStatus stopStatus)
-        {
-            base.OnStop(ctx, stopStatus);
-            _bundle.OnStop?.Invoke(ctx, stopStatus);
-        }
+        protected override void OnAbort(TContext ctx) =>
+            _action.Abort(ctx);
 
-        protected override void OnAbort(TContext ctx)
-        {
-            base.OnAbort(ctx);
-            _bundle.OnAbort?.Invoke(ctx);
-        }
-
-        protected override void OnReset()
-        {
-            base.OnReset();
-            _bundle.OnReset?.Invoke();
-        }
+        protected override void OnReset() =>
+            _action.Reset();
     }
 }

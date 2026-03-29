@@ -6,13 +6,6 @@ namespace BehaviorTree
     {
         private readonly ICondition<TContext> _condition;
 
-        // public GuardDecorator(Func<TContext, float, bool> condition, INode<TContext> child) : base(child)
-        // {
-        //     if (condition == null) 
-        //         throw new ArgumentNullException(nameof(condition));
-        //     _condition = new DelegateCondition<TContext>(condition);   
-        // }
-
         public GuardDecorator(ICondition<TContext> condition, INode<TContext> child) : base(child)
         {
             _condition = condition ?? throw new ArgumentNullException(nameof(condition));

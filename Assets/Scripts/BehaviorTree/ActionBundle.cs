@@ -2,6 +2,7 @@ using System;
 
 namespace BehaviorTree
 {
+    // Abandoned, might be deleted later
     public sealed class ActionBundle<TContext>
     {
         public Action<TContext> OnStart { get; }
