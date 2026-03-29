@@ -11,9 +11,9 @@ namespace BehaviorTree
             bool hasFailure = false;
             bool hasRunning = false;
 
-            foreach (var c in Children)
+            foreach (INode<TContext> c in Children)
             {
-                var status = c.Tick(ctx, dt);
+                NodeStatus status = c.Tick(ctx, dt);
 
                 if (status == NodeStatus.Failure)
                     hasFailure = true;
@@ -23,7 +23,7 @@ namespace BehaviorTree
             
             if (hasFailure)
             {
-                foreach (var c in Children)
+                foreach (INode<TContext> c in Children)
                     c.Abort(ctx);
                 return NodeStatus.Failure;
             }
@@ -34,7 +34,7 @@ namespace BehaviorTree
         protected override void OnAbort(TContext ctx)
         {
             base.OnAbort(ctx);
-            foreach (var c in Children)
+            foreach (INode<TContext> c in Children)
                 c.Abort(ctx);
         }
     }

@@ -18,7 +18,7 @@ namespace BehaviorTree
         {
             while (_index < Children.Length)
             {
-                var status = Children[_index].Tick(ctx, dt);
+                NodeStatus status = Children[_index].Tick(ctx, dt);
 
                 if (status != NodeStatus.Success)
                     return status;

@@ -14,9 +14,9 @@ namespace BehaviorTree
                 LastStatus = NodeStatus.Running;
             }
 
-            var status = OnTick(ctx, dt);
+            NodeStatus status = OnTick(ctx, dt);
             if (status == NodeStatus.None)
-                throw new InvalidOperationException("Node cannot return NodeStatus.None from OnTick.");
+                throw new InvalidOperationException("OnTick must not return NodeStatus.None.");
             LastStatus = status;
 
             if (LastStatus != NodeStatus.Running)
