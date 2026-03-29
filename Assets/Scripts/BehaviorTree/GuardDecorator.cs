@@ -2,7 +2,7 @@ using System;
 
 namespace BehaviorTree
 {
-    public class GuardDecorator<TContext> : DecoratorBase<TContext>, IGuard<TContext>
+    public sealed class GuardDecorator<TContext> : DecoratorBase<TContext>, IGuard<TContext>
     {
         private readonly ICondition<TContext> _condition;
 
