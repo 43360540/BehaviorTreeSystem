@@ -104,8 +104,8 @@ namespace BehaviorTree
 
         public INode<TContext> Build() 
         {
-            if (_children.Exists(c => c == null))
-                throw new InvalidOperationException("Composite node cannot be null or contains null.");
+            if (_children.Count == 0 || _children.Exists(c => c == null))
+                throw new InvalidOperationException("Children cannot be null or contains null in Composite.");
 
             return CreateComposite(_children.ToArray());
         }

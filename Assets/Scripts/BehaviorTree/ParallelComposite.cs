@@ -1,31 +1,40 @@
+using System;
 using System.Collections.Generic;
 
 namespace BehaviorTree
 {
     public sealed class ParallelComposite<TContext> : CompositeBase<TContext>
     {
-        public ParallelComposite(params INode<TContext>[] children) : base(children){}
+        private readonly NodeStatus[] _statuses;
+
+        public ParallelComposite(params INode<TContext>[] children) : base(children) =>
+            _statuses = new NodeStatus[children.Length];
+
+        protected override void OnStart(TContext ctx)
+        {
+            base.OnStart(ctx);
+            ClearStatuses();
+        }
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            bool hasFailure = false;
             bool hasRunning = false;
 
-            foreach (INode<TContext> c in Children)
+            for (int i = 0; i < Children.Length; i++)
             {
-                NodeStatus status = c.Tick(ctx, dt);
+                if (_statuses[i] == NodeStatus.Success)
+                    continue;
 
-                if (status == NodeStatus.Failure)
-                    hasFailure = true;
-                if (status == NodeStatus.Running)
+                _statuses[i] = Children[i].Tick(ctx, dt);
+
+                if (_statuses[i] == NodeStatus.Failure)
+                {
+                    AbortAllChildren(ctx);
+                    return NodeStatus.Failure;
+                }
+                    
+                if (_statuses[i] == NodeStatus.Running)
                     hasRunning = true;
-            }
-            
-            if (hasFailure)
-            {
-                foreach (INode<TContext> c in Children)
-                    c.Abort(ctx);
-                return NodeStatus.Failure;
             }
 
             return hasRunning ? NodeStatus.Running : NodeStatus.Success;
@@ -34,8 +43,25 @@ namespace BehaviorTree
         protected override void OnAbort(TContext ctx)
         {
             base.OnAbort(ctx);
+            AbortAllChildren(ctx);
+        }
+
+        protected override void OnReset()
+        {
+            base.OnReset();
+            ClearStatuses();
+        }
+
+        private void AbortAllChildren(TContext ctx)
+        {
             foreach (INode<TContext> c in Children)
                 c.Abort(ctx);
+        }
+
+        private void ClearStatuses()
+        {
+            for (int i = 0; i < _statuses.Length; i++)
+                _statuses[i] = NodeStatus.None;
         }
     }
 }

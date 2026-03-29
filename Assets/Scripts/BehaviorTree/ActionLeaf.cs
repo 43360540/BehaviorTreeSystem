@@ -4,13 +4,10 @@ namespace BehaviorTree
 {
     public sealed class ActionLeaf<TContext> : NodeBase<TContext>
     {
-        private ActionBase<TContext> _action;
+        private readonly ActionBase<TContext> _action;
 
         public ActionLeaf(ActionBase<TContext> action) =>
             _action = action ?? throw new ArgumentNullException(nameof(action));
-
-        // public ActionLeaf(QuickAction<TContext> qAction) =>
-        //     _action = qAction ?? throw new ArgumentNullException(nameof(qAction));
 
         protected override void OnStart(TContext ctx) =>
             _action.Start(ctx);
