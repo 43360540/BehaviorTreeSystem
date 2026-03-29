@@ -1,6 +1,6 @@
 using BehaviorTree;
 
-public class TestBehavior : BTAction<AiContext>
+public class TestBehavior : ActionBase<AiContext>
 {
     public override NodeStatus Tick(AiContext ctx, float dt)
     {

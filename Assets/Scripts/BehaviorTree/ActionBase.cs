@@ -1,6 +1,6 @@
 namespace BehaviorTree
 {
-    public abstract class BTAction<TContext>
+    public abstract class ActionBase<TContext>
     {
         public virtual void Start(TContext ctx) { }
 

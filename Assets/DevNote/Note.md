@@ -15,6 +15,7 @@
 - [ ] DecoratorBuilderBase 仍然沒有 Condition(...)
 - [ ] Comment
 - [x] Parallel composite
+- [ ] RootBuilder
 
 ### Visual Workflow
 

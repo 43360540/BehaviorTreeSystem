@@ -4,7 +4,7 @@ namespace BehaviorTree
 {
     public abstract class NodeBase<TContext> : INode<TContext>
     {
-        public NodeStatus LastStatus { get; private set; } = NodeStatus.None;
+        public NodeStatus LastStatus { get; protected set; } = NodeStatus.None;
 
         public NodeStatus Tick(TContext ctx, float dt)
         {

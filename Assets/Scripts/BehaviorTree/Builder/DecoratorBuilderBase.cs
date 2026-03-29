@@ -12,15 +12,7 @@ namespace BehaviorTree
             _logic = logic ?? throw new ArgumentNullException(nameof(logic));
         }
 
-        public void Action(BTAction<TContext> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            Node(new ActionLeaf<TContext>(action));
-        }
-
-        public void Action(ActionBundle<TContext> action)
+        public void Action(ActionBase<TContext> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
