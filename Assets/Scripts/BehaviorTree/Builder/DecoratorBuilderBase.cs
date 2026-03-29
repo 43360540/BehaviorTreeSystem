@@ -17,7 +17,7 @@ namespace BehaviorTree
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            Node(new ActionLeaf<TContext>(action));
+            SetChild(new ActionLeaf<TContext>(action));
         }
 
         public void Selector(Action<SelectorCompositeBuilder<TContext>> buildAction)
@@ -25,10 +25,10 @@ namespace BehaviorTree
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-            var builder = new SelectorCompositeBuilder<TContext>();
+            SelectorCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            Node(builder.Build());
+            SetChild(builder.Build());
         }
 
         public void Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
@@ -36,10 +36,10 @@ namespace BehaviorTree
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-            var builder = new SequenceCompositeBuilder<TContext>();
+            SequenceCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            Node(builder.Build());
+            SetChild(builder.Build());
         }
 
         public void Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
@@ -47,14 +47,13 @@ namespace BehaviorTree
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-
-            var builder = new ParallelCompositeBuilder<TContext>();
+            ParallelCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            Node(builder.Build());
+            SetChild(builder.Build());
         }
 
-        public void Node(INode<TContext> node)
+        public void SetChild(INode<TContext> node)
         {
             if (_child != null)
                 throw new InvalidOperationException("Child has been set.");

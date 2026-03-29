@@ -11,27 +11,42 @@ namespace BehaviorTree
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-            if (_root != null)
-                throw new InvalidOperationException("Root node already set.");
-
-            var builder = new SelectorCompositeBuilder<TContext>();
+            SelectorCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            _root = builder.Build();
+            SetRoot(builder.Build());
         }
 
         public void Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
         {
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
-                
+
+            SequenceCompositeBuilder<TContext> builder = new();
+            buildAction(builder);
+
+            SetRoot(builder.Build());
+        }
+
+        public void Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
+        {
+            if (buildAction == null)
+                throw new ArgumentNullException(nameof(buildAction));
+
+            ParallelCompositeBuilder<TContext> builder = new();
+            buildAction(builder);
+
+            SetRoot(builder.Build());
+        }
+
+        public void SetRoot(INode<TContext> node)
+        {
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
             if (_root != null)
                 throw new InvalidOperationException("Root node already set.");
 
-            var builder = new SequenceCompositeBuilder<TContext>();
-            buildAction(builder);
-
-            _root = builder.Build();
+            _root = node;
         }
 
         public INode<TContext> Build()

@@ -6,6 +6,7 @@ namespace BehaviorTree
     {
         public TContext Context { get; private set; }
         public INode<TContext> Tree { get; private set; }
+        public float Duration { get; private set; }
 
         protected abstract TContext CreateContext();
         protected abstract INode<TContext> CreateTree();
@@ -18,12 +19,13 @@ namespace BehaviorTree
 
         protected virtual void Update()
         {
-            Tree.Tick(Context, Time.deltaTime);
+            Duration = Time.deltaTime;
+            Tree?.Tick(Context, Duration);
         }
 
         protected virtual void OnDisable()
         {
-            Tree.Abort(Context);
+            Tree?.Abort(Context);
         }
     }
 }

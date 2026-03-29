@@ -8,12 +8,12 @@ namespace BehaviorTree
         private readonly List<INode<TContext>> _children = new();
         private TSelf Self => (TSelf)this;
 
-        public TSelf Condition(ICondition<TContext> predicate)
+        public TSelf Condition(ICondition<TContext> condition)
         {
-            if (predicate == null)
-                throw new ArgumentNullException(nameof(predicate));
+            if (condition == null)
+                throw new ArgumentNullException(nameof(condition));
 
-            return Node(new ConditionLeaf<TContext>(predicate));
+            return AddChild(new ConditionLeaf<TContext>(condition));
         }
 
         public TSelf Condition(Func<TContext, float, bool> predicate)
@@ -21,7 +21,7 @@ namespace BehaviorTree
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));
 
-            return Node(new ConditionLeaf<TContext>(predicate));
+            return AddChild(new ConditionLeaf<TContext>(predicate));
         }
 
         public TSelf Action(ActionBase<TContext> action)
@@ -29,7 +29,7 @@ namespace BehaviorTree
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            return Node(new ActionLeaf<TContext>(action));
+            return AddChild(new ActionLeaf<TContext>(action));
         }
 
         public TSelf Guard(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
@@ -39,10 +39,10 @@ namespace BehaviorTree
             else if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-            var builder = new GuardDecoratorBuilder<TContext>(condition);
+            GuardDecoratorBuilder<TContext> builder = new(condition);
             buildAction(builder);
 
-            return Node(builder.Build());
+            return AddChild(builder.Build());
         }
 
         public TSelf Guard(Func<TContext, float, bool> predicate, Action<GuardDecoratorBuilder<TContext>> buildAction)
@@ -52,10 +52,10 @@ namespace BehaviorTree
             else if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-            var builder = new GuardDecoratorBuilder<TContext>(predicate);
+            GuardDecoratorBuilder<TContext> builder = new(predicate);
             buildAction(builder);
 
-            return Node(builder.Build());
+            return AddChild(builder.Build());
         }
 
         public TSelf Selector(Action<SelectorCompositeBuilder<TContext>> buildAction)
@@ -63,10 +63,10 @@ namespace BehaviorTree
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-            var builder = new SelectorCompositeBuilder<TContext>();
+            SelectorCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            return Node(builder.Build());
+            return AddChild(builder.Build());
         }
 
         public TSelf Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
@@ -74,10 +74,10 @@ namespace BehaviorTree
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-            var builder = new SequenceCompositeBuilder<TContext>();
+            SequenceCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            return Node(builder.Build());
+            return AddChild(builder.Build());
         }
 
         public TSelf Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
@@ -85,13 +85,13 @@ namespace BehaviorTree
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-            var builder = new ParallelCompositeBuilder<TContext>();
+            ParallelCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            return Node(builder.Build());
+            return AddChild(builder.Build());
         }
 
-        public TSelf Node(INode<TContext> node)
+        public TSelf AddChild(INode<TContext> node)
         {
             if (node == null)
                 throw new ArgumentNullException(nameof(node));

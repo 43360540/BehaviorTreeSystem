@@ -9,10 +9,10 @@ namespace BehaviorTree
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            var prev = _activeChild;
+            INode<TContext> prev = _activeChild;
             _activeChild = null;
 
-            foreach (var c in Children)
+            foreach (INode<TContext> c in Children)
             {
                 // Is child a ICondition
                 if (c is IGuard<TContext> guard)
@@ -34,7 +34,7 @@ namespace BehaviorTree
                     prev = null;
                 }
 
-                var status = _activeChild.Tick(ctx, dt);
+                NodeStatus status = _activeChild.Tick(ctx, dt);
 
                 if (status == NodeStatus.Failure)
                     continue;

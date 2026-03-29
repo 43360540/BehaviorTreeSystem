@@ -9,7 +9,7 @@ namespace BehaviorTree
             if (buildAction == null)
                 throw new ArgumentNullException(nameof(buildAction));
 
-            var rootBuilder = new RootBuilder<TContext>();
+            RootBuilder<TContext> rootBuilder = new();
             buildAction(rootBuilder);
             return rootBuilder.Build();
         }
