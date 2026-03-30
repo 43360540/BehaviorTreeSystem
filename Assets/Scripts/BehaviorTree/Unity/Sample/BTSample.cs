@@ -26,7 +26,10 @@ public class BTSample : MonoBTRunner<ContextSample>
                     .Sequence(seq => seq
                         .Action(new ActionSample())
                         .Condition(new ConditionSample()))
-                        .Condition((ctx, dt) => Context.IsTure)));
+                        .Condition((ctx, dt) => Context.IsTrue)
+                    .Parallel(par => par
+                        .Action(new ActionSample())
+                        .Action(new ActionSample()))));
         
         return root;
     }
