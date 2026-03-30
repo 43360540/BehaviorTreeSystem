@@ -1,9 +1,9 @@
 using UnityEngine;
 using BehaviorTree;
 
-public class ContextSample
+public class ContextSample : MonoBehaviour
 {
-    public bool IsTure = true;
+    public bool IsTrue = true;
 
     public void Attack(){}
 }
