@@ -8,7 +8,7 @@ namespace BehaviorTree
         private readonly List<INode<TContext>> _children = new();
         private TSelf Self => (TSelf)this;
 
-        public TSelf Condition(ICondition<TContext> condition)
+        public TSelf Check(ICondition<TContext> condition)
         {
             if (condition == null)
                 throw new ArgumentNullException(nameof(condition));
@@ -16,15 +16,7 @@ namespace BehaviorTree
             return AddChild(new ConditionLeaf<TContext>(condition));
         }
 
-        public TSelf Condition(Func<TContext, float, bool> predicate)
-        {
-            if (predicate == null)
-                throw new ArgumentNullException(nameof(predicate));
-
-            return AddChild(new ConditionLeaf<TContext>(predicate));
-        }
-
-        public TSelf Action(ActionBase<TContext> action)
+        public TSelf Do(ActionBase<TContext> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
@@ -32,7 +24,7 @@ namespace BehaviorTree
             return AddChild(new ActionLeaf<TContext>(action));
         }
 
-        public TSelf Guard(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
+        public TSelf When(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
         {
             if (condition == null)
                 throw new ArgumentNullException(nameof(condition));
@@ -40,19 +32,6 @@ namespace BehaviorTree
                 throw new ArgumentNullException(nameof(buildAction));
 
             GuardDecoratorBuilder<TContext> builder = new(condition);
-            buildAction(builder);
-
-            return AddChild(builder.Build());
-        }
-
-        public TSelf Guard(Func<TContext, float, bool> predicate, Action<GuardDecoratorBuilder<TContext>> buildAction)
-        {
-            if (predicate == null)
-                throw new ArgumentNullException(nameof(predicate));
-            else if (buildAction == null)
-                throw new ArgumentNullException(nameof(buildAction));
-
-            GuardDecoratorBuilder<TContext> builder = new(predicate);
             buildAction(builder);
 
             return AddChild(builder.Build());
