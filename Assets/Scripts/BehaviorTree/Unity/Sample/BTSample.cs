@@ -1,5 +1,6 @@
 using UnityEngine;
 using BehaviorTree;
+using Unity.VisualScripting;
 
 public class BTSample : MonoBTRunner<ContextSample>
 {
@@ -12,25 +13,28 @@ public class BTSample : MonoBTRunner<ContextSample>
 
     protected override INode<ContextSample> CreateTree()
     {
-        INode<ContextSample> root = 
+        INode<ContextSample> root =
             BT<ContextSample>.Build(root => root
-                .Selector(sel => sel
-                    .Action(new ActionSample())
-                    .Action(new QuickAction<ContextSample>((ctx, dt) =>
-                    {
-                        ctx.Attack();
-                        return NodeStatus.Success;
-                    }))
-                    .Guard(new ConditionSample(), g => g
-                        .Action(new ActionSample()))
-                    .Sequence(seq => seq
-                        .Action(new ActionSample())
-                        .Condition(new ConditionSample()))
-                        .Condition((ctx, dt) => Context.IsTrue)
-                    .Parallel(par => par
-                        .Action(new ActionSample())
-                        .Action(new ActionSample()))));
-        
+                .Selector(hunt => hunt
+                    .Guard(new IsTargetInRange(5f), canAttack => canAttack
+                        .Action(new Attack()))
+                    .Guard(new IsTargetInRange(15f), track => track
+                        .Sequence(tracking => tracking
+                            .Action(new LookAround())
+                            .Action(new TrackTarget())
+                        )
+                    )
+                    .Guard(new IsTired(), canBreak => canBreak
+                        .Parallel(brk => brk
+                            .Action(new Pant())
+                            .Action(new LookAround())
+                            .Action(new Wander())
+                        )
+                    )
+                    .Action(new Idle())
+                )
+            );
+
         return root;
     }
 }
