@@ -12,7 +12,15 @@ namespace BehaviorTree
             _logic = logic ?? throw new ArgumentNullException(nameof(logic));
         }
 
-        public void Action(ActionBase<TContext> action)
+        public void Check(ICondition<TContext> condition)
+        {
+            if (condition == null)
+                throw new ArgumentNullException(nameof(condition));
+
+            SetChild(new ConditionLeaf<TContext>(condition));
+        }
+
+        public void Do(ActionBase<TContext> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
