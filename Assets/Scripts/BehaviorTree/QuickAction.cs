@@ -20,6 +20,19 @@ namespace BehaviorTree
             OnReset = onReset;
         }
 
+        public QuickAction(Func<float, NodeStatus> onTick, Action onStart = null,
+                            Action<NodeStatus> onStop = null, Action onAbort = null, Action onReset = null)
+        {
+            if (onTick == null)
+                throw new ArgumentNullException(nameof(onTick));
+                
+            OnStart = (_) => onStart();
+            OnTick = (_, x) => onTick(x);
+            OnStop = (_, x) => onStop(x);
+            OnAbort = (_) => onAbort();
+            OnReset = onReset;
+        }
+
         public override void Start(TContext ctx) =>
             OnStart?.Invoke(ctx);
 
