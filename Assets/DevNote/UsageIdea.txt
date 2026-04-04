@@ -1,0 +1,60 @@
+Idea-StateStyle: 
+也許之後可以模仿阿葉的做法，用 reflection + enum 做 Base ，但僅限於撰寫層，後續接回現在的底層去運作。
+實際上的操作差異為將切換邏輯往外拉，切換邏輯轉為後續(或先決定也行，畢竟enum可以先填寫)單獨撰寫
+
+想像操作方式如下:
+namespace BehaviorTree.StateStyle
+{
+    public class StateStyleSample : StateStyleBase<StateStyleSample, StateStyleSample.State>
+    {
+        # region Idle
+        [BTAction(Lifecycle.Start)]
+        private void IdleStart()
+        {
+            ...    
+        }
+        [BTAction(Lifecycle.Tick)]
+        private NodeStatus IdleTick()
+        {
+            ...    
+        }
+        [BTAction(Lifecycle.Stop)]
+        private void IdleStop(NodeStatus stopStatus)
+        {
+            ...    
+        }
+        # endregion
+        ...
+
+        private enum State
+        {
+            Idle,
+            Attack,
+            Altert,
+            ...
+        }
+
+        protected override INode<StateStyleSample> INodeCreateTree()
+        {
+            INode<StateStyleSample> tree = BT.Build(root => root
+                .Selector(main => main
+                    .When(new QuiclCondition((ctx, dt) => ), _ => _
+                        .Do(SetAction(State.Attack))
+                    )
+                    .Do(SetAction(State.Alert))
+                    .Do(SetAction(State.Idle))
+                ...
+                )
+            )
+
+            return tree;
+        }
+    }
+}
+
+底層想像: 
+- 透過 reflection 蒐集 enum + 關鍵字，組合成 QuickAtion 後，用此建立 ActionLeaf node。而組樹也是用 enum 來達成型別安全。
+這樣的話那怕用的是 QuickAction ，實際上卻是可以帶狀態的 statfull action，無論公與私的狀態都集中於同一 class ，應該是很扁平的usage了
+- 0402 想法更新：reflection 蒐集由子 class 傳入的 enum 作為 State ，另外定義一組 enum 為 Lifecycle 或其他類似名稱，這個可以先寫死，不需要由開發者定。
+組裝的話就是先蒐集 State 在 + 上 Lifecycle 組成"某狀態的某 lifecycle" 再組裝為一個完整的 ActionNode。
+後續可以在追加 BTAction 的 overloads ，讓開發者決定是否要加上 State 保證不會錯字，若無，則讓底層去自動抓 string ......  

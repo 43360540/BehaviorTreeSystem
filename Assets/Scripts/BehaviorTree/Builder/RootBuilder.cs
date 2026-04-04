@@ -5,36 +5,23 @@ namespace BehaviorTree
     public sealed class RootBuilder<TContext>
     {
         private INode<TContext> _root = null;
-
+        // ConditionLeaf
         public void Check(ICondition<TContext> condition)
         {
             if (condition == null)
                 throw new ArgumentNullException(nameof(condition));
 
-            SetRoot(new ConditionLeaf<TContext>(condition));
+            Set(new ConditionLeaf<TContext>(condition));
         }
-
+        // ActionLeaf
         public void Do(ActionBase<TContext> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            SetRoot(new ActionLeaf<TContext>(action));
+            Set(new ActionLeaf<TContext>(action));
         }
-
-        public void When(Func<TContext, float, bool> predicate, Action<GuardDecoratorBuilder<TContext>> buildAction)
-        {
-            if (predicate == null)
-                throw new ArgumentNullException(nameof(predicate));
-            if (buildAction == null)
-                throw new ArgumentNullException(nameof(buildAction));
-
-            GuardDecoratorBuilder<TContext> builder = new(new DelegateCondition<TContext>(predicate));
-            buildAction(builder);
-
-            SetRoot(builder.Build());
-        }
-
+        // GuardDecorator
         public void When(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
         {
             if (condition == null)
@@ -45,7 +32,7 @@ namespace BehaviorTree
             GuardDecoratorBuilder<TContext> builder = new(condition);
             buildAction(builder);
 
-            SetRoot(builder.Build());
+            Set(builder.Build());
         }
 
         public void Selector(Action<SelectorCompositeBuilder<TContext>> buildAction)
@@ -56,7 +43,7 @@ namespace BehaviorTree
             SelectorCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            SetRoot(builder.Build());
+            Set(builder.Build());
         }
 
         public void Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
@@ -67,7 +54,7 @@ namespace BehaviorTree
             SequenceCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            SetRoot(builder.Build());
+            Set(builder.Build());
         }
 
         public void Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
@@ -78,17 +65,15 @@ namespace BehaviorTree
             ParallelCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            SetRoot(builder.Build());
+            Set(builder.Build());
         }
 
-        public void SetRoot(INode<TContext> node)
+        public void Set(INode<TContext> node)
         {
-            if (node == null)
-                throw new ArgumentNullException(nameof(node));
             if (_root != null)
                 throw new InvalidOperationException("Root node already set.");
 
-            _root = node;
+            _root = node ?? throw new ArgumentNullException(nameof(node));
         }
 
         public INode<TContext> Build()

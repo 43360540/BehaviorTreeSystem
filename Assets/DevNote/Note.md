@@ -20,3 +20,4 @@
 ### Visual Workflow
 
 - [ ] basic node data
+- [ ] source generator

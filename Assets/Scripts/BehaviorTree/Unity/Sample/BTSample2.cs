@@ -43,9 +43,9 @@ public class BTSample2 : MonoBTRunner<ContextSample>
         INode<ContextSample> root =
             BT<ContextSample>.Build(root => root
                 .Selector(main => main
-                    .AddChild(breakBranch)
-                    .AddChild(attackBranch)
-                    .AddChild(trackBranch)
+                    .Add(breakBranch)
+                    .Add(attackBranch)
+                    .Add(trackBranch)
                     .Do(new Idle()) // default
                 )
             );

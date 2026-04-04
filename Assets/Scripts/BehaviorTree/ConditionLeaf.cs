@@ -10,7 +10,7 @@ namespace BehaviorTree
         {
             if (condition == null)
                 throw new ArgumentNullException(nameof(condition));
-            _condition = new DelegateCondition<TContext>(condition);
+            _condition = new QuickCondition<TContext>(condition);
         }
 
         public ConditionLeaf(ICondition<TContext> condition)

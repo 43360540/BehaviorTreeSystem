@@ -7,23 +7,23 @@ namespace BehaviorTree
     {
         private readonly List<INode<TContext>> _children = new();
         private TSelf Self => (TSelf)this;
-
+        // ConditionLeaf
         public TSelf Check(ICondition<TContext> condition)
         {
             if (condition == null)
                 throw new ArgumentNullException(nameof(condition));
 
-            return AddChild(new ConditionLeaf<TContext>(condition));
+            return Add(new ConditionLeaf<TContext>(condition));
         }
-
+        // ActionLeaf
         public TSelf Do(ActionBase<TContext> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            return AddChild(new ActionLeaf<TContext>(action));
+            return Add(new ActionLeaf<TContext>(action));
         }
-
+        // GuardDecorator
         public TSelf When(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
         {
             if (condition == null)
@@ -34,7 +34,7 @@ namespace BehaviorTree
             GuardDecoratorBuilder<TContext> builder = new(condition);
             buildAction(builder);
 
-            return AddChild(builder.Build());
+            return Add(builder.Build());
         }
 
         public TSelf Selector(Action<SelectorCompositeBuilder<TContext>> buildAction)
@@ -45,7 +45,7 @@ namespace BehaviorTree
             SelectorCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            return AddChild(builder.Build());
+            return Add(builder.Build());
         }
 
         public TSelf Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
@@ -56,7 +56,7 @@ namespace BehaviorTree
             SequenceCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            return AddChild(builder.Build());
+            return Add(builder.Build());
         }
 
         public TSelf Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
@@ -67,10 +67,10 @@ namespace BehaviorTree
             ParallelCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            return AddChild(builder.Build());
+            return Add(builder.Build());
         }
 
-        public TSelf AddChild(INode<TContext> node)
+        public TSelf Add(INode<TContext> node)
         {
             if (node == null)
                 throw new ArgumentNullException(nameof(node));

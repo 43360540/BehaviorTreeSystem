@@ -11,21 +11,21 @@ namespace BehaviorTree
         {
             _logic = logic ?? throw new ArgumentNullException(nameof(logic));
         }
-
+        // ConditionLeaf
         public void Check(ICondition<TContext> condition)
         {
             if (condition == null)
                 throw new ArgumentNullException(nameof(condition));
 
-            SetChild(new ConditionLeaf<TContext>(condition));
+            Set(new ConditionLeaf<TContext>(condition));
         }
-
+        // ActionLeaf
         public void Do(ActionBase<TContext> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            SetChild(new ActionLeaf<TContext>(action));
+            Set(new ActionLeaf<TContext>(action));
         }
 
         public void Selector(Action<SelectorCompositeBuilder<TContext>> buildAction)
@@ -36,7 +36,7 @@ namespace BehaviorTree
             SelectorCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            SetChild(builder.Build());
+            Set(builder.Build());
         }
 
         public void Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
@@ -47,7 +47,7 @@ namespace BehaviorTree
             SequenceCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            SetChild(builder.Build());
+            Set(builder.Build());
         }
 
         public void Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
@@ -58,10 +58,10 @@ namespace BehaviorTree
             ParallelCompositeBuilder<TContext> builder = new();
             buildAction(builder);
 
-            SetChild(builder.Build());
+            Set(builder.Build());
         }
 
-        public void SetChild(INode<TContext> node)
+        public void Set(INode<TContext> node)
         {
             if (_child != null)
                 throw new InvalidOperationException("Child has been set.");
