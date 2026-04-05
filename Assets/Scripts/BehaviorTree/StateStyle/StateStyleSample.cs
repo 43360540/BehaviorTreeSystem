@@ -6,70 +6,68 @@ namespace BehaviorTree.StateStyle
     {
         public int Number { get; private set;}
 
-        # region Idle
-        [StateDef(Lifecycle.Start)]
+        #region Idle
+        [StateDef("Idle", Phase.Start)]
         private void IdleStart()
         {
             // ...
         }
-        [StateDef(Lifecycle.Tick)]
+        [StateDef("Idle", Phase.Tick)]
         private NodeStatus IdleTick(float dt)
         {
             // ...
             return NodeStatus.Success;   
         }
-        [StateDef(Lifecycle.Stop)]
+        [StateDef("Idle", Phase.Stop)]
         private void IdleStop(NodeStatus stopStatus)
         {
-            // ...  
+            // ...
         }
-        # endregion
+        #endregion
 
-        # region Attack
-        [StateDef(Lifecycle.Start)]
+        #region Attack
+        [StateDef("Attack", Phase.Start)]
         private void AttackStart()
         {
             // ...
         }
-        [StateDef(Lifecycle.Tick)]
+        [StateDef("Attack", Phase.Tick)]
         private NodeStatus AttackTick(float dt)
         {
             // ...
             return NodeStatus.Success;   
         }
-        [StateDef(Lifecycle.Stop)]
+        [StateDef("Attack", Phase.Stop)]
         private void AttackStop(NodeStatus stopStatus)
         {
             // ...  
         }
-        # endregion
+        #endregion
 
-        # region Alert
-        [StateDef(Lifecycle.Start)]
+        #region Alert
+        [StateDef("Alert", Phase.Start)]
         private void AlertStart()
         {
             // ...
         }
-        [StateDef(Lifecycle.Tick)]
+        [StateDef("Alert", Phase.Tick)]
         private NodeStatus AlertTick(float dt)
         {
             // ...
             return NodeStatus.Success;   
         }
-        [StateDef(Lifecycle.Stop)]
+        [StateDef("Alert", Phase.Stop)]
         private void AlertStop(NodeStatus stopStatus)
         {
             // ...  
         }
-        # endregion
-        // ...
+        #endregion
 
         public enum State
         {
             Idle,
             Attack,
             Alert,
-            // ...
         }
 
         protected override StateStyleSample CreateContext() => this;
@@ -78,12 +76,11 @@ namespace BehaviorTree.StateStyle
         {
             var tree = BT<StateStyleSample>.Build(root => root
                 .Selector(main => main
-                    .When(new QuickCondition<StateStyleSample>((ctx, dt) => Number > 0), _ => _
+                    .When(new QuickCondition<StateStyleSample>(() => Number > 0), _ => _
                         .Do(Action(State.Attack))
                     )
                     .Do(Action(State.Alert))
                     .Do(Action(State.Idle))
-                // ...
                 )
             );
 

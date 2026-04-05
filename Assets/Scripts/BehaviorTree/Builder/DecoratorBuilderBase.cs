@@ -12,54 +12,23 @@ namespace BehaviorTree
             _logic = logic ?? throw new ArgumentNullException(nameof(logic));
         }
         // ConditionLeaf
-        public void Check(ICondition<TContext> condition)
-        {
-            if (condition == null)
-                throw new ArgumentNullException(nameof(condition));
-
-            Set(new ConditionLeaf<TContext>(condition));
-        }
+        public void Check(ICondition<TContext> condition) =>
+            Set(BTNodeFactory<TContext>.Check(condition));
         // ActionLeaf
-        public void Do(ActionBase<TContext> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
+        public void Do(ActionBase<TContext> action) =>
+            Set(BTNodeFactory<TContext>.Do(action));
+        // GuardDecorator
+        public void When(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction) =>
+            Set(BTNodeFactory<TContext>.When(condition, buildAction));
 
-            Set(new ActionLeaf<TContext>(action));
-        }
+        public void Selector(Action<SelectorCompositeBuilder<TContext>> buildAction) =>
+            Set(BTNodeFactory<TContext>.Selector(buildAction));
 
-        public void Selector(Action<SelectorCompositeBuilder<TContext>> buildAction)
-        {
-            if (buildAction == null)
-                throw new ArgumentNullException(nameof(buildAction));
+        public void Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction) =>
+            Set(BTNodeFactory<TContext>.Sequence(buildAction));
 
-            SelectorCompositeBuilder<TContext> builder = new();
-            buildAction(builder);
-
-            Set(builder.Build());
-        }
-
-        public void Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
-        {
-            if (buildAction == null)
-                throw new ArgumentNullException(nameof(buildAction));
-
-            SequenceCompositeBuilder<TContext> builder = new();
-            buildAction(builder);
-
-            Set(builder.Build());
-        }
-
-        public void Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
-        {
-            if (buildAction == null)
-                throw new ArgumentNullException(nameof(buildAction));
-
-            ParallelCompositeBuilder<TContext> builder = new();
-            buildAction(builder);
-
-            Set(builder.Build());
-        }
+        public void Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction) =>
+            Set(BTNodeFactory<TContext>.Parallel(buildAction));
 
         public void Set(INode<TContext> node)
         {
