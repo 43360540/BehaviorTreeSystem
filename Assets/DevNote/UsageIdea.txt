@@ -53,8 +53,18 @@ namespace BehaviorTree.StateStyle
 }
 
 底層想像: 
-- 透過 reflection 蒐集 enum + 關鍵字，組合成 QuickAtion 後，用此建立 ActionLeaf node。而組樹也是用 enum 來達成型別安全。
+- 0401：透過 reflection 蒐集 enum + 關鍵字，組合成 QuickAtion 後，用此建立 ActionLeaf node。而組樹也是用 enum 來達成型別安全。
 這樣的話那怕用的是 QuickAction ，實際上卻是可以帶狀態的 statfull action，無論公與私的狀態都集中於同一 class ，應該是很扁平的usage了
 - 0402 想法更新：reflection 蒐集由子 class 傳入的 enum 作為 State ，另外定義一組 enum 為 Lifecycle 或其他類似名稱，這個可以先寫死，不需要由開發者定。
 組裝的話就是先蒐集 State 在 + 上 Lifecycle 組成"某狀態的某 lifecycle" 再組裝為一個完整的 ActionNode。
-後續可以在追加 BTAction 的 overloads ，讓開發者決定是否要加上 State 保證不會錯字，若無，則讓底層去自動抓 string ......  
+後續可以在追加 BTAction 的 overloads ，讓開發者決定是否要加上 State 保證不會錯字，若無，則讓底層去自動抓 string ...... 
+- 0403 想法更新：由於.NET 9.0 不支援 generic attribute，暫時放棄 State + Lifecycle attribute， State的部分改用 string parse 回推 State enum
+
+使用說明:
+1. Inherit StateStyleBase
+2. StateStyleBase需要傳入兩個型別 <T1, T2> T1 為子class，也就是由開發者命名撰寫，繼承了 StateStyleBase 的 class，
+   T2 為 State enum
+3. 建立 State enum ，其內容為開發者所需的狀態(State)，名稱需要與 Method 名稱完全對應。
+4. 開始撰寫methods， methods 名稱需要是 State + Lifecycle ，並將 method 用 Attribute 標記 Lifecycle [StateDef("Lifeycle.Start")]
+5. Lifecycle有：Start, Tick, Stop, Abort, Reset. 其中 Tick 必須有回傳值 NodeStatus；Stop 必須有 NodeStatus parameter。只有Tick是必須有的，其他是可選項
+

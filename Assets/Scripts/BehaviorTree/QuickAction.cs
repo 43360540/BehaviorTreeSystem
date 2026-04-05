@@ -13,8 +13,8 @@ namespace BehaviorTree
         public QuickAction(Func<TContext, float, NodeStatus> onTick, Action<TContext> onStart = null,
                             Action<TContext, NodeStatus> onStop = null, Action<TContext> onAbort = null, Action onReset = null)
         {
-            OnStart = onStart;
             OnTick = onTick ?? throw new ArgumentNullException(nameof(onTick));
+            OnStart = onStart;
             OnStop = onStop;
             OnAbort = onAbort;
             OnReset = onReset;
@@ -23,13 +23,10 @@ namespace BehaviorTree
         public QuickAction(Func<float, NodeStatus> onTick, Action onStart = null,
                             Action<NodeStatus> onStop = null, Action onAbort = null, Action onReset = null)
         {
-            if (onTick == null)
-                throw new ArgumentNullException(nameof(onTick));
-                
-            OnStart = (_) => onStart();
-            OnTick = (_, x) => onTick(x);
-            OnStop = (_, x) => onStop(x);
-            OnAbort = (_) => onAbort();
+            OnTick = onTick != null ? (_, x) => onTick(x) : throw new ArgumentNullException(nameof(onTick));
+            OnStart = onStart != null ? (_) => onStart() : null;
+            OnStop = onStop != null ? (_, x) => onStop(x) : null;
+            OnAbort = onAbort != null ? (_) => onAbort() : null;
             OnReset = onReset;
         }
 

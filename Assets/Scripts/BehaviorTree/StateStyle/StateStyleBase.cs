@@ -7,19 +7,20 @@ namespace BehaviorTree.StateStyle
 {
     public sealed record StateStyleMethodInfo
     {
+        public MethodInfo Method { get; }
+        public StateDefAttribute Attribute { get; }
+        public string Name { get; }
+
         public StateStyleMethodInfo(MethodInfo method, StateDefAttribute attribute, string name)
         {
             Method = method;
             Attribute = attribute;
             Name = name;
         }
-
-        public MethodInfo Method { get; }
-        public StateDefAttribute Attribute { get; }
-        public string Name { get; }
     }
 
-    public abstract class StateStyleBase<TSelf, TStates> : MonoBTRunner<TSelf> where TStates : struct, Enum where TSelf : StateStyleBase<TSelf, TStates>
+    public abstract class StateStyleBase<TSelf, TStates> : MonoBTRunner<TSelf> 
+    where TStates : struct, Enum where TSelf : StateStyleBase<TSelf, TStates>
     {
         private readonly TStates[] _states = (TStates[])Enum.GetValues(typeof(TStates));
         private readonly Dictionary<TStates, QuickAction<TSelf>> _actions = new();
@@ -29,16 +30,20 @@ namespace BehaviorTree.StateStyle
             Scan();
             base.Awake();
         }
-
+    
         protected QuickAction<TSelf> Action(TStates state) =>
             _actions[state];
 
+        // 1. Scan every method within subclass TSelf and roughly exclude unneeded
+        // 2. Collect needed and organize MethodInfos by States
+        // 3. Build actions from given infos
         protected void Scan()
         {
             _actions.Clear();
 
             var roughInfos = typeof(TSelf)
-                .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                .GetMethods(BindingFlags.Instance | BindingFlags.Public | 
+                            BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
                 .Select(method => new StateStyleMethodInfo(method, method.GetCustomAttribute<StateDefAttribute>(), method.Name))
                 .Where(x => x.Attribute != null);
 
@@ -47,27 +52,30 @@ namespace BehaviorTree.StateStyle
             BuildActions(methodInfos);
         }
 
-        private Dictionary<TStates, Dictionary<Lifecycle, StateStyleMethodInfo>> CollectMethods(IEnumerable<StateStyleMethodInfo> infos)
+        // Collect needed and organize MethodInfos by States
+        private Dictionary<TStates, Dictionary<Phase, StateStyleMethodInfo>> CollectMethods(IEnumerable<StateStyleMethodInfo> infos)
         {
-            var want = new Dictionary<TStates, Dictionary<Lifecycle, StateStyleMethodInfo>>();
+            var want = new Dictionary<TStates, Dictionary<Phase, StateStyleMethodInfo>>();
 
             for (int i = 0; i < _states.Length; i++)
             {
-                Dictionary<Lifecycle, StateStyleMethodInfo> lifecycles = new();
+                Dictionary<Phase, StateStyleMethodInfo> lifecycles = new();
                 TStates state = _states[i];
+                
                 var states = infos
-                    .Where(method => RemoveSuffix(method.Name, method.Attribute.Lifecycle) == state.ToString());
+                    .Where(method => method.Attribute.StateName == state.ToString());
 
                 foreach (var x in states)
-                {
                     lifecycles.Add(x.Attribute.Lifecycle, x);
-                }
+
                 want.Add(state, lifecycles);
             }
             return want;
         }
 
-        private void BuildActions(Dictionary<TStates, Dictionary<Lifecycle, StateStyleMethodInfo>> infos)
+        // Build actions from given infos
+        // Parameter: infos - States <-> MethodInfos
+        private void BuildActions(Dictionary<TStates, Dictionary<Phase, StateStyleMethodInfo>> infos)
         {
             foreach (var x in infos)
             {
@@ -75,31 +83,29 @@ namespace BehaviorTree.StateStyle
                     continue;
 
                 Action start = null;
-                Func<float, NodeStatus> tick = null;
                 Action<NodeStatus> stop = null;
+                Action abort = null;
+                Action reset = null;
+                Func<float, NodeStatus> tick = null;
 
-                if (x.Value.TryGetValue(Lifecycle.Start, out var startInfo))
+                // Create delegates from each MethodInfo if it's not null
+                if (x.Value.TryGetValue(Phase.Start, out var startInfo))
                     start = (Action)Delegate.CreateDelegate(typeof(Action), this, startInfo.Method);
-                if (x.Value.TryGetValue(Lifecycle.Stop, out var stopInfo))
+                if (x.Value.TryGetValue(Phase.Stop, out var stopInfo))
                     stop = (Action<NodeStatus>)Delegate.CreateDelegate(typeof(Action<NodeStatus>), this, stopInfo.Method);
-                if (x.Value.TryGetValue(Lifecycle.Tick, out var tickInfo))
+                if (x.Value.TryGetValue(Phase.Abort, out var abortInfo))
+                    abort = (Action)Delegate.CreateDelegate(typeof(Action), this, abortInfo.Method);
+                if (x.Value.TryGetValue(Phase.Reset, out var resetInfo))
+                    reset = (Action)Delegate.CreateDelegate(typeof(Action), this, resetInfo.Method);
+                if (x.Value.TryGetValue(Phase.Tick, out var tickInfo))
                     tick = (Func<float, NodeStatus>)Delegate.CreateDelegate(typeof(Func<float, NodeStatus>), this, tickInfo.Method);
-                else 
+                else // Null tick is not allowed
                     throw new InvalidOperationException();
 
-                var action = new QuickAction<TSelf>(onStart: start, onTick: tick, onStop: stop);
+                // Create QuickAction from delegates that created before
+                var action = new QuickAction<TSelf>(onStart: start, onTick: tick, onStop: stop, onAbort: abort, onReset: reset);
                 _actions.Add(x.Key, action);
             }
-        }
-
-        private string RemoveSuffix(string origin, Lifecycle lifecycle)
-        {
-            string suffix = lifecycle.ToString();
-
-            if (!origin.EndsWith(suffix))
-                throw new InvalidOperationException();
-
-            return origin[..^suffix.Length];
         }
     }
 }

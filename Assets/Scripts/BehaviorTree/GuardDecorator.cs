@@ -5,6 +5,7 @@ namespace BehaviorTree
     public sealed class GuardDecorator<TContext> : DecoratorBase<TContext>, IGuard<TContext>
     {
         private readonly ICondition<TContext> _condition;
+        private bool? _catchedResult = null;
 
         public GuardDecorator(ICondition<TContext> condition, INode<TContext> child) : base(child)
         {
@@ -13,17 +14,25 @@ namespace BehaviorTree
 
         public bool CanEnter(TContext ctx, float dt)
         {
-            return _condition.Evaluate(ctx, dt);
+            _catchedResult = _condition.Evaluate(ctx, dt);
+            return _catchedResult.Value;
         }
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            if (!_condition.Evaluate(ctx, dt))
+            bool canContinue = _catchedResult ?? _condition.Evaluate(ctx, dt);
+
+            if (!canContinue)
             {
                 Child.Abort(ctx);
                 return NodeStatus.Failure;
             }
             return Child.Tick(ctx, dt);
+        }
+
+        protected override void OnReset()
+        {
+            _catchedResult = null;
         }
     }
 }

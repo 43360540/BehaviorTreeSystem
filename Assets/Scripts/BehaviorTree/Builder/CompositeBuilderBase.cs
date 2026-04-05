@@ -8,67 +8,23 @@ namespace BehaviorTree
         private readonly List<INode<TContext>> _children = new();
         private TSelf Self => (TSelf)this;
         // ConditionLeaf
-        public TSelf Check(ICondition<TContext> condition)
-        {
-            if (condition == null)
-                throw new ArgumentNullException(nameof(condition));
-
-            return Add(new ConditionLeaf<TContext>(condition));
-        }
+        public TSelf Check(ICondition<TContext> condition) =>
+            Add(BTNodeFactory<TContext>.Check(condition));
         // ActionLeaf
-        public TSelf Do(ActionBase<TContext> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            return Add(new ActionLeaf<TContext>(action));
-        }
+        public TSelf Do(ActionBase<TContext> action) =>
+            Add(BTNodeFactory<TContext>.Do(action));
         // GuardDecorator
-        public TSelf When(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
-        {
-            if (condition == null)
-                throw new ArgumentNullException(nameof(condition));
-            else if (buildAction == null)
-                throw new ArgumentNullException(nameof(buildAction));
+        public TSelf When(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction) =>
+            Add(BTNodeFactory<TContext>.When(condition, buildAction));
 
-            GuardDecoratorBuilder<TContext> builder = new(condition);
-            buildAction(builder);
+        public TSelf Selector(Action<SelectorCompositeBuilder<TContext>> buildAction) =>
+            Add(BTNodeFactory<TContext>.Selector(buildAction));
 
-            return Add(builder.Build());
-        }
+        public TSelf Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction) =>
+            Add(BTNodeFactory<TContext>.Sequence(buildAction));
 
-        public TSelf Selector(Action<SelectorCompositeBuilder<TContext>> buildAction)
-        {
-            if (buildAction == null)
-                throw new ArgumentNullException(nameof(buildAction));
-
-            SelectorCompositeBuilder<TContext> builder = new();
-            buildAction(builder);
-
-            return Add(builder.Build());
-        }
-
-        public TSelf Sequence(Action<SequenceCompositeBuilder<TContext>> buildAction)
-        {
-            if (buildAction == null)
-                throw new ArgumentNullException(nameof(buildAction));
-
-            SequenceCompositeBuilder<TContext> builder = new();
-            buildAction(builder);
-
-            return Add(builder.Build());
-        }
-
-        public TSelf Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction)
-        {
-            if (buildAction == null)
-                throw new ArgumentNullException(nameof(buildAction));
-
-            ParallelCompositeBuilder<TContext> builder = new();
-            buildAction(builder);
-
-            return Add(builder.Build());
-        }
+        public TSelf Parallel(Action<ParallelCompositeBuilder<TContext>> buildAction) =>
+            Add(BTNodeFactory<TContext>.Parallel(buildAction));
 
         public TSelf Add(INode<TContext> node)
         {
