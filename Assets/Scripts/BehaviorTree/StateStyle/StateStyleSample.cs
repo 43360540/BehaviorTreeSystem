@@ -70,8 +70,6 @@ namespace BehaviorTree.StateStyle
             Alert,
         }
 
-        protected override StateStyleSample CreateContext() => this;
-
         protected override INode<StateStyleSample> CreateTree()
         {
             var tree = BT<StateStyleSample>.Build(root => root

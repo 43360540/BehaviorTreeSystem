@@ -25,8 +25,10 @@ namespace BehaviorTree.StateStyle
         private readonly TStates[] _states = (TStates[])Enum.GetValues(typeof(TStates));
         private readonly Dictionary<TStates, QuickAction<TSelf>> _actions = new();
 
+
         protected override void Awake()
         {
+            SetContext((TSelf)this);
             Scan();
             base.Awake();
         }
