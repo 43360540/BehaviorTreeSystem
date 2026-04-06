@@ -3,13 +3,6 @@ using BehaviorTree;
 
 public class BTSample2 : MonoBTRunner<ContextSample>
 {
-    [SerializeField] private ContextSample _context;
-
-    protected override ContextSample CreateContext()
-    {
-        return _context;
-    }
-
     protected override INode<ContextSample> CreateTree()
     {
         INode<ContextSample> breakBranch =
