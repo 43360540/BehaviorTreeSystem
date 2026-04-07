@@ -2,7 +2,7 @@ using System;
 
 namespace BehaviorTree
 {
-    public class ConditionLeaf<TContext> : NodeBase<TContext>
+    public class ConditionLeaf<TContext> : LeafBase<TContext, ICondition<TContext>>
     {
         private readonly ICondition<TContext> _condition = null;
         
@@ -18,14 +18,9 @@ namespace BehaviorTree
             _condition = condition ?? throw new ArgumentNullException(nameof(condition));
         }
 
-        public bool Evaluate(TContext ctx, float dt)
-        {
-            return _condition.Evaluate(ctx, dt);
-        }
-
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            return Evaluate(ctx, dt)? NodeStatus.Success : NodeStatus.Failure;
+            return _condition.Evaluate(ctx, dt) ? NodeStatus.Success : NodeStatus.Failure;
         }
     }
 }

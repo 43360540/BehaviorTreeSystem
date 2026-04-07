@@ -2,7 +2,7 @@ using System;
 
 namespace BehaviorTree
 {
-    public sealed class ActionLeaf<TContext> : NodeBase<TContext>
+    public sealed class ActionLeaf<TContext> : LeafBase<TContext, ActionBase<TContext>>
     {
         private readonly ActionBase<TContext> _action;
 

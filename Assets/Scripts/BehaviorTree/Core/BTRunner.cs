@@ -1,5 +1,5 @@
 using System;
-
+using UnityEngine;
 namespace BehaviorTree
 {
     public class BTRunner<TContext>
@@ -21,6 +21,20 @@ namespace BehaviorTree
         public void Abort()
         {
             Tree.Abort(Context);
+        }
+
+        public string PrintTree(IReadOnlyNode node, int depth = 0)
+        {
+            string indent = new string(' ', depth * 4);
+            string treeLog = $"{indent}- {node.Name} [{node.Status}]\n";
+
+            if (node.SubNodes == null)
+                return treeLog;
+                
+            foreach (var c in node.SubNodes)
+                treeLog += PrintTree(c, depth + 1);
+
+            return treeLog;
         }
     }
 }

@@ -68,3 +68,10 @@ namespace BehaviorTree.StateStyle
 4. 開始撰寫methods， methods 名稱需要是 State + Lifecycle ，並將 method 用 Attribute 標記 Lifecycle [StateDef("Lifeycle.Start")]
 5. Lifecycle有：Start, Tick, Stop, Abort, Reset. 其中 Tick 必須有回傳值 NodeStatus；Stop 必須有 NodeStatus parameter。只有Tick是必須有的，其他是可選項
 
+1 - 1-1
+       - 1-1-1
+       - 1-1-2
+  - 1-2
+       - 1-2-1
+       - 1-2-2
+       ...
