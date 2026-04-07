@@ -572,6 +572,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95ac16ca66c1c3d4e935e6b33ad33295, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BehaviorTree.StateStyle.StateStyleSample
+  _debugMode: 1
   _tickRate: 0
   _context: {fileID: 0}
 --- !u!1660057539 &9223372036854775807

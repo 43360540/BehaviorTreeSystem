@@ -25,20 +25,6 @@ namespace BehaviorTree
         IReadOnlyList<IReadOnlyNode> SubNodes { get; }
     }
 
-    public sealed class DebugInfo
-    {
-        public string Name { get; }
-        public NodeStatus Status { get; }
-        public DebugInfo[] SubInfo { get; }
-
-        public DebugInfo(string name, NodeStatus status, params DebugInfo[] subInfo)
-        {
-            Name = name;
-            Status = status;
-            SubInfo = subInfo;
-        }
-    }
-
     public enum NodeStatus
     {
         None,
