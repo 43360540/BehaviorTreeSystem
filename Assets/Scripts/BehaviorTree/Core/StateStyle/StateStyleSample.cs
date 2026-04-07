@@ -4,7 +4,12 @@ namespace BehaviorTree.StateStyle
 {
     public class StateStyleSample : StateStyleBase<StateStyleSample, StateStyleSample.State>
     {
-        public int Number { get; private set;}
+        public int Number { get; private set;} = 0;
+
+        protected override void Start()
+        {
+            base.Start();
+        }
 
         #region Idle
         [StateDef("Idle", Phase.Start)]
@@ -35,7 +40,7 @@ namespace BehaviorTree.StateStyle
         private NodeStatus AttackTick(float dt)
         {
             // ...
-            return NodeStatus.Success;   
+            return NodeStatus.Running;   
         }
         [StateDef("Attack", Phase.Stop)]
         private void AttackStop(NodeStatus stopStatus)
@@ -74,7 +79,7 @@ namespace BehaviorTree.StateStyle
         {
             var tree = BT<StateStyleSample>.Build(root => root
                 .Selector(main => main
-                    .When(new QuickCondition<StateStyleSample>(() => Number > 0), _ => _
+                    .When(() => Number >= 0, _ => _
                         .Do(Action(State.Attack))
                     )
                     .Do(Action(State.Alert))

@@ -2,18 +2,18 @@ using System;
 
 namespace BehaviorTree
 {
-    public sealed class RootBuilder<TContext>
+    public sealed class RootBuilder<TContext> : ISingleChild<TContext>
     {
         private INode<TContext> _root = null;
         // ConditionLeaf
         public void Check(ICondition<TContext> condition) =>
-            Set(BTNodeFactory<TContext>.Check(condition));
+            Set(BTNodeFactory<TContext>.Condition(condition));
         // ActionLeaf
         public void Do(ActionBase<TContext> action) =>
-            Set(BTNodeFactory<TContext>.Do(action));
+            Set(BTNodeFactory<TContext>.Action(action));
         // GuardDecorator
         public void When(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction) =>
-            Set(BTNodeFactory<TContext>.When(condition, buildAction));
+            Set(BTNodeFactory<TContext>.Guard(condition, buildAction));
 
         public void Selector(Action<SelectorCompositeBuilder<TContext>> buildAction) =>
             Set(BTNodeFactory<TContext>.Selector(buildAction));

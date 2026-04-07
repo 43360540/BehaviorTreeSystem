@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace BehaviorTree
 {
-    public abstract class CompositeBuilderBase<TContext, TSelf> where TSelf : CompositeBuilderBase<TContext, TSelf>
+    public abstract class CompositeBuilderBase<TContext, TSelf> : IMultiChildren<TSelf, TContext> where TSelf : CompositeBuilderBase<TContext, TSelf>
     {
         private readonly List<INode<TContext>> _children = new();
         private TSelf Self => (TSelf)this;
         // ConditionLeaf
         public TSelf Check(ICondition<TContext> condition) =>
-            Add(BTNodeFactory<TContext>.Check(condition));
+            Add(BTNodeFactory<TContext>.Condition(condition));
         // ActionLeaf
         public TSelf Do(ActionBase<TContext> action) =>
-            Add(BTNodeFactory<TContext>.Do(action));
+            Add(BTNodeFactory<TContext>.Action(action));
         // GuardDecorator
         public TSelf When(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction) =>
-            Add(BTNodeFactory<TContext>.When(condition, buildAction));
+            Add(BTNodeFactory<TContext>.Guard(condition, buildAction));
 
         public TSelf Selector(Action<SelectorCompositeBuilder<TContext>> buildAction) =>
             Add(BTNodeFactory<TContext>.Selector(buildAction));

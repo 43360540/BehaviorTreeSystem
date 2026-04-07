@@ -4,24 +4,24 @@ namespace BehaviorTree
 {
     public static class BTNodeFactory<TContext>
     {
-        // ConditionLeaf
-        public static INode<TContext> Check(ICondition<TContext> condition)
+        
+        public static INode<TContext> Condition(ICondition<TContext> condition)
         {
             if (condition == null)
                 throw new ArgumentNullException(nameof(condition));
 
             return new ConditionLeaf<TContext>(condition);
         }
-        // ActionLeaf
-        public static INode<TContext> Do(ActionBase<TContext> action)
+        
+        public static INode<TContext> Action(ActionBase<TContext> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
             return new ActionLeaf<TContext>(action);
         }
-        // GuardDecorator
-        public static INode<TContext> When(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
+
+        public static INode<TContext> Guard(ICondition<TContext> condition, Action<GuardDecoratorBuilder<TContext>> buildAction)
         {
             if (condition == null)
                 throw new ArgumentNullException(nameof(condition));

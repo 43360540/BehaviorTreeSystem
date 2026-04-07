@@ -4,6 +4,7 @@ namespace BehaviorTree
 {
     public abstract class MonoBTRunner<TContext> : MonoBehaviour
     {
+        [SerializeField] private bool _debugMode = false;
         [SerializeField] private Rate _tickRate = Rate.Update;
         [SerializeField] private TContext _context;
 
@@ -24,10 +25,15 @@ namespace BehaviorTree
         protected virtual void Start()
         {
             _bTRunner = new (_context, CreateTree());
+            if (_debugMode)
+                Debug.LogWarning(_bTRunner.PrintTree(Tree as IReadOnlyNode));
         }
 
         protected virtual void Update()
         {
+            if (_debugMode)
+                Debug.LogWarning(_bTRunner.PrintTree(Tree as IReadOnlyNode));
+                
             if (TickRate != Rate.Update)
                 return;
             _bTRunner?.Tick(Time.deltaTime);
@@ -45,7 +51,7 @@ namespace BehaviorTree
             _bTRunner?.Abort();
         }
         // Set context programmatically if not assigned via Inspector
-        // !! Must use it before Start() !! 
+        // !! Must be use before Start() !! 
         protected void SetContext(TContext context)
         {
             if (_context == null)
