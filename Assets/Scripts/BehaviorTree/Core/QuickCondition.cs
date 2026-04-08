@@ -6,8 +6,10 @@ namespace BehaviorTree
     {
         private readonly Func<TContext, float, bool> _predicate = null;
 
-        public QuickCondition(Func<TContext, float, bool> predicate) =>
+        public QuickCondition(Func<TContext, float, bool> predicate)
+        {
             _predicate = predicate ?? throw new ArgumentNullException(nameof(predicate));
+        } 
 
         public QuickCondition(Func<float, bool> predicate)
         {
@@ -22,7 +24,7 @@ namespace BehaviorTree
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));
 
-            _predicate = (_, _) => predicate(); 
+            _predicate = (_, _) => predicate();
         }
 
         public bool Evaluate(TContext ctx, float dt)

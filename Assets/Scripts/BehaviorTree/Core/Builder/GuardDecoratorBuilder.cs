@@ -4,12 +4,12 @@ namespace BehaviorTree
 {
     public sealed class GuardDecoratorBuilder<TContext> :  DecoratorBuilderBase<ICondition<TContext>, TContext>
     {
-        public GuardDecoratorBuilder(ICondition<TContext> condition) : base(condition){}
-        public GuardDecoratorBuilder(Func<TContext, float, bool> predicate) : base(new QuickCondition<TContext>(predicate)){}
-        public GuardDecoratorBuilder(Func<float, bool> predicate) : base(new QuickCondition<TContext>(predicate)){}
-        public GuardDecoratorBuilder(Func<bool> predicate) : base(new QuickCondition<TContext>(predicate)){}
+        public GuardDecoratorBuilder(ICondition<TContext> condition, string name = null) : base(condition, name){}
+        public GuardDecoratorBuilder(Func<TContext, float, bool> predicate, string name = null) : base(new QuickCondition<TContext>(predicate), name){}
+        public GuardDecoratorBuilder(Func<float, bool> predicate, string name = null) : base(new QuickCondition<TContext>(predicate), name){}
+        public GuardDecoratorBuilder(Func<bool> predicate, string name = null) : base(new QuickCondition<TContext>(predicate), name){}
 
-        protected override INode<TContext> CreateDecorator(ICondition<TContext> logic, INode<TContext> child) =>
-            new GuardDecorator<TContext>(logic, child);
+        protected override INode<TContext> CreateDecorator(ICondition<TContext> logic, INode<TContext> child, string name = null) =>
+            new GuardDecorator<TContext>(logic, child, name);
     }
 }

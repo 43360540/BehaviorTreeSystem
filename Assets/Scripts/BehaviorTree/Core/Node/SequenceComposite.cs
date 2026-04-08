@@ -5,7 +5,8 @@ namespace BehaviorTree
     {
         private int _index = 0;
 
-        public SequenceComposite(params INode<TContext>[] children) : base(children) { }
+        public SequenceComposite(string name = null, params INode<TContext>[] children) : 
+            base(name ?? "Sequence", children) { }
 
         protected override void OnStart(TContext ctx)
         {

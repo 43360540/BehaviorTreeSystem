@@ -2,18 +2,11 @@ using System;
 
 namespace BehaviorTree
 {
-    public class ConditionLeaf<TContext> : LeafBase<TContext, ICondition<TContext>>
+    public sealed class ConditionLeaf<TContext> : LeafBase<TContext>
     {
         private readonly ICondition<TContext> _condition = null;
-        
-        public ConditionLeaf(Func<TContext, float, bool> condition)
-        {
-            if (condition == null)
-                throw new ArgumentNullException(nameof(condition));
-            _condition = new QuickCondition<TContext>(condition);
-        }
 
-        public ConditionLeaf(ICondition<TContext> condition)
+        public ConditionLeaf(ICondition<TContext> condition, string name = null) : base(name ?? condition.GetType().Name)
         {
             _condition = condition ?? throw new ArgumentNullException(nameof(condition));
         }

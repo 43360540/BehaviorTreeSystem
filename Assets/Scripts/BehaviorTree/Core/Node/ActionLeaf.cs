@@ -2,11 +2,11 @@ using System;
 
 namespace BehaviorTree
 {
-    public sealed class ActionLeaf<TContext> : LeafBase<TContext, ActionBase<TContext>>
+    public sealed class ActionLeaf<TContext> : LeafBase<TContext>
     {
         private readonly ActionBase<TContext> _action;
 
-        public ActionLeaf(ActionBase<TContext> action) =>
+        public ActionLeaf(ActionBase<TContext> action, string name = null) : base(name ?? action.GetType().Name) =>
             _action = action ?? throw new ArgumentNullException(nameof(action));
 
         protected override void OnStart(TContext ctx) =>

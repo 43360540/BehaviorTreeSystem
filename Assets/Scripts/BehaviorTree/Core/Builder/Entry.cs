@@ -2,7 +2,7 @@ using System;
 
 namespace BehaviorTree
 {
-    public static class BT<TContext>
+    public static class BTBuilder<TContext>
     {
         public static INode<TContext> Build(Action<RootBuilder<TContext>> buildAction)
         {

@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace BehaviorTree
 {
-    public abstract class DecoratorBase<TContext, TLogic> : NodeBase<TContext>, IReadOnlyNode
+    public abstract class DecoratorBase<TContext> : NodeBase<TContext>, IReadOnlyNode
     {
         protected INode<TContext> Child { get; }
 
         private readonly IReadOnlyNode[] _readOnlyChildren;
 
-        public DecoratorBase(INode<TContext> child)
+        public DecoratorBase(INode<TContext> child, string name = null) : base(name)
         {
             Child = child ?? throw new ArgumentNullException(nameof(child));
             _readOnlyChildren = child is IReadOnlyNode r ? new[] { r } : Array.Empty<IReadOnlyNode>();
@@ -22,10 +22,8 @@ namespace BehaviorTree
         }
 
         // IReadOnlyNode
-        public string Name => GetType().Name;
-
-        public NodeStatus Status => LastStatus;
-
-        public IReadOnlyList<IReadOnlyNode> SubNodes => _readOnlyChildren;  
+        string IReadOnlyNode.Name => Name;
+        NodeStatus IReadOnlyNode.Status => LastStatus;
+        IReadOnlyList<IReadOnlyNode> IReadOnlyNode.SubNodes => _readOnlyChildren;  
     }
 }

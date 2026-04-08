@@ -7,7 +7,8 @@ namespace BehaviorTree
     {
         private readonly NodeStatus[] _statuses;
 
-        public ParallelComposite(params INode<TContext>[] children) : base(children) =>
+        public ParallelComposite(string name = null, params INode<TContext>[] children) : 
+            base(name ?? "Parallel", children) =>
             _statuses = new NodeStatus[children.Length];
 
         protected override void OnStart(TContext ctx)
