@@ -5,7 +5,8 @@ namespace BehaviorTree
     {
         private INode<TContext> _activeChild = null;
 
-        public SelectorComposite(params INode<TContext>[] children) : base(children) { }
+        public SelectorComposite(string name = null, params INode<TContext>[] children) : 
+            base(name ?? "Selector", children) { }
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {

@@ -10,7 +10,7 @@ namespace BehaviorTree
 
         private readonly IReadOnlyNode[] _readOnlyChildren;
 
-        protected CompositeBase(params INode<TContext>[] children)
+        protected CompositeBase(string name = null, params INode<TContext>[] children) : base(name)
         {
             if (children == null)
                 throw new ArgumentNullException(nameof(children));
@@ -25,10 +25,8 @@ namespace BehaviorTree
         }
 
         // IReadOnlyNode
-        public string Name => GetType().Name;
-
-        public NodeStatus Status => LastStatus;
-
-        public IReadOnlyList<IReadOnlyNode> SubNodes => _readOnlyChildren;
+        string IReadOnlyNode.Name => Name;
+        NodeStatus IReadOnlyNode.Status => LastStatus;
+        IReadOnlyList<IReadOnlyNode> IReadOnlyNode.SubNodes => _readOnlyChildren;
     }
 }

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace BehaviorTree
 {
     public interface INode<TContext>
@@ -16,13 +14,6 @@ namespace BehaviorTree
     public interface ICondition<TContext>
     {
         bool Evaluate(TContext ctx, float dt);
-    }
-
-    public interface IReadOnlyNode
-    {
-        string Name { get; }
-        NodeStatus Status { get; }
-        IReadOnlyList<IReadOnlyNode> SubNodes { get; }
     }
 
     public enum NodeStatus

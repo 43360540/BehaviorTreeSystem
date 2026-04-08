@@ -23,7 +23,7 @@ namespace BehaviorTree.StateStyle
     where TStates : struct, Enum where TSelf : StateStyleBase<TSelf, TStates>
     {
         private readonly TStates[] _states = (TStates[])Enum.GetValues(typeof(TStates));
-        private readonly Dictionary<TStates, QuickAction<TSelf>> _actions = new();
+        private readonly Dictionary<TStates, INode<TSelf>> _actionLeaves = new();
 
 
         protected override void Awake()
@@ -33,15 +33,15 @@ namespace BehaviorTree.StateStyle
             base.Awake();
         }
     
-        protected QuickAction<TSelf> Action(TStates state) =>
-            _actions[state];
+        protected INode<TSelf> GetState(TStates state) =>
+            _actionLeaves[state];
 
         // 1. Scan every method within subclass TSelf and roughly exclude unneeded
         // 2. Collect needed and organize MethodInfos by States
         // 3. Build actions from given infos
         protected void Scan()
         {
-            _actions.Clear();
+            _actionLeaves.Clear();
 
             var roughInfos = typeof(TSelf)
                 .GetMethods(BindingFlags.Instance | BindingFlags.Public | 
@@ -105,8 +105,9 @@ namespace BehaviorTree.StateStyle
                     throw new InvalidOperationException();
 
                 // Create QuickAction from delegates that created before
-                var action = new QuickAction<TSelf>(onStart: start, onTick: tick, onStop: stop, onAbort: abort, onReset: reset);
-                _actions.Add(x.Key, action);
+                var action = BTNodeFactory<TSelf>.Action( new QuickAction<TSelf>(
+                                onStart: start, onTick: tick, onStop: stop, onAbort: abort, onReset: reset), x.Key.ToString());
+                _actionLeaves.Add(x.Key, action);
             }
         }
     }

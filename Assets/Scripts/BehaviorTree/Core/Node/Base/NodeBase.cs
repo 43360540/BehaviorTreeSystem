@@ -4,7 +4,18 @@ namespace BehaviorTree
 {
     public abstract class NodeBase<TContext> : INode<TContext>
     {
+        private static string CleanName(string name)
+        {
+            int i = name.IndexOf('`');
+            return i >= 0 ? name[..i] : name;
+        }
+
+        protected string Name { get; private set; }
+
         protected NodeStatus LastStatus { get; set; } = NodeStatus.None;
+
+        public NodeBase(string name) => 
+            Name = string.IsNullOrEmpty(name) ? CleanName(GetType().Name) : name;
 
         public NodeStatus Tick(TContext ctx, float dt)
         {

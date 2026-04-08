@@ -2,12 +2,13 @@ using System;
 
 namespace BehaviorTree
 {
-    public sealed class GuardDecorator<TContext> : DecoratorBase<TContext, ICondition<TContext>>, IGuard<TContext>
+    public sealed class GuardDecorator<TContext> : DecoratorBase<TContext>, IGuard<TContext>
     {
         private readonly ICondition<TContext> _condition;
         private bool? _cachedResult = null;
 
-        public GuardDecorator(ICondition<TContext> condition, INode<TContext> child) : base(child)
+        public GuardDecorator(ICondition<TContext> condition, 
+                                INode<TContext> child, string name = null) : base(child, name ?? condition.GetType().Name)
         {
             _condition = condition ?? throw new ArgumentNullException(nameof(condition));
         }

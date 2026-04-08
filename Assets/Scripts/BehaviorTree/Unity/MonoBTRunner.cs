@@ -5,6 +5,7 @@ namespace BehaviorTree
     public abstract class MonoBTRunner<TContext> : MonoBehaviour
     {
         [SerializeField] private bool _debugMode = false;
+        [SerializeField] private float _debugDuration = 3f;
         [SerializeField] private Rate _tickRate = Rate.Update;
         [SerializeField] private TContext _context;
 
@@ -15,6 +16,8 @@ namespace BehaviorTree
         protected abstract INode<TContext> CreateTree();
 
         private BTRunner<TContext> _bTRunner;
+        private IReadOnlyNode _rTree;
+        private float _debugTimer = 0f; 
 
         protected virtual void Awake()
         {
@@ -25,18 +28,27 @@ namespace BehaviorTree
         protected virtual void Start()
         {
             _bTRunner = new (_context, CreateTree());
-            if (_debugMode)
-                Debug.LogWarning(_bTRunner.PrintTree(Tree as IReadOnlyNode));
+            _rTree = _bTRunner.Tree as IReadOnlyNode;
+
+            if (_rTree == null)
+                Debug.LogError($"You may be using a customized Node. Please make sure it has implemented {nameof(IReadOnlyNode)}.");
         }
 
         protected virtual void Update()
         {
-            if (_debugMode)
-                Debug.LogWarning(_bTRunner.PrintTree(Tree as IReadOnlyNode));
-                
             if (TickRate != Rate.Update)
                 return;
             _bTRunner?.Tick(Time.deltaTime);
+        }
+
+        protected virtual void LateUpdate()
+        {
+            if (_debugMode && _debugTimer >= _debugDuration)
+            {
+                Debug.LogWarning(BTDebugger.DrawTree(_rTree));
+                _debugTimer = 0f;
+            }
+            _debugTimer += Time.deltaTime;
         }
 
         protected virtual void FixedUpdate()

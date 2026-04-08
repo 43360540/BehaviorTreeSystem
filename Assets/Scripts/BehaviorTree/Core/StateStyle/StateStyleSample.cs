@@ -59,7 +59,7 @@ namespace BehaviorTree.StateStyle
         private NodeStatus AlertTick(float dt)
         {
             // ...
-            return NodeStatus.Success;   
+            return NodeStatus.Running;   
         }
         [StateDef("Alert", Phase.Stop)]
         private void AlertStop(NodeStatus stopStatus)
@@ -77,13 +77,13 @@ namespace BehaviorTree.StateStyle
 
         protected override INode<StateStyleSample> CreateTree()
         {
-            var tree = BT<StateStyleSample>.Build(root => root
+            var tree = BTBuilder<StateStyleSample>.Build(root => root
                 .Selector(main => main
-                    .When(() => Number >= 0, _ => _
-                        .Do(Action(State.Attack))
+                    .When(() => Number > 0, _ => _
+                        .Set(GetState(State.Attack))
                     )
-                    .Do(Action(State.Alert))
-                    .Do(Action(State.Idle))
+                    .Add(GetState(State.Alert))
+                    .Add(GetState(State.Idle))
                 )
             );
 
