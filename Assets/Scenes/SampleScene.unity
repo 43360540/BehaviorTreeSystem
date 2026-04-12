@@ -573,8 +573,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BehaviorTree.StateStyle.StateStyleSample
   _debugMode: 1
+  _debugDuration: 1
   _tickRate: 0
-  _context: {fileID: 0}
+  _context: {fileID: 932948495}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

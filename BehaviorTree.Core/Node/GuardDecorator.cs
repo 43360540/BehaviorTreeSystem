@@ -36,4 +36,77 @@ namespace BehaviorTree
             _cachedResult = null;
         }
     }
+
+    public static class GuardExtension
+    {
+        public static TSelf When<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
+            ICondition<TContext> condition, Action<ISingleChild<TContext>> buildAction, string? name = null)
+        {
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(condition, name);
+            buildAction(builder);
+            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
+        }
+
+        public static TSelf When<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
+            Func<TContext, float, bool> predicate,Action<ISingleChild<TContext>> buildAction,  string? name = "When")
+        {
+            var qCondition = new QuickCondition<TContext>(predicate);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            buildAction(builder);
+            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
+        }
+
+        public static TSelf When<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
+            Func<float, bool> predicate,Action<ISingleChild<TContext>> buildAction,  string? name = "When")
+        {
+            var qCondition = new QuickCondition<TContext>(predicate);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            buildAction(builder);
+            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
+        }
+
+        public static TSelf When<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
+            Func<bool> predicate,Action<ISingleChild<TContext>> buildAction,  string? name = "When")
+        {
+            var qCondition = new QuickCondition<TContext>(predicate);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            buildAction(builder);
+            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
+        }
+
+        public static void When<TContext>(this ISingleChild<TContext> b,
+            ICondition<TContext> condition, Action<ISingleChild<TContext>> buildAction, string? name = null)
+        {
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(condition, name);
+            buildAction(builder);
+            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
+        }
+
+        public static void When<TContext>(this ISingleChild<TContext> b,
+            Func<TContext, float, bool> predicate,Action<ISingleChild<TContext>> buildAction,  string? name = "When")
+        {
+            var qCondition = new QuickCondition<TContext>(predicate);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            buildAction(builder);
+            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
+        }
+
+        public static void When<TContext>(this ISingleChild<TContext> b,
+            Func<float, bool> predicate,Action<ISingleChild<TContext>> buildAction,  string? name = "When")
+        {
+            var qCondition = new QuickCondition<TContext>(predicate);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            buildAction(builder);
+            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
+        }
+
+        public static void When<TContext>(this ISingleChild<TContext> b,
+            Func<bool> predicate,Action<ISingleChild<TContext>> buildAction,  string? name = "When")
+        {
+            var qCondition = new QuickCondition<TContext>(predicate);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            buildAction(builder);
+            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
+        }
+    }
 }

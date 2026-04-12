@@ -1,3 +1,5 @@
+using System;
+
 namespace BehaviorTree
 {
     // Reactive Selector
@@ -56,6 +58,25 @@ namespace BehaviorTree
         {
             base.OnReset();
             _activeChild = null;
+        }
+    }
+
+    public static class SelectorExtension
+    {
+        public static TSelf Selector<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
+            Action<IMultiChildren<CompositeBuilder<TContext>, TContext>> buildAction, string? name = null)
+        {
+            var builder = new CompositeBuilder<TContext>(name);
+            buildAction(builder);
+            return b.Add(builder.Build((c, n) => new SelectorComposite<TContext>(n, c)));
+        }
+
+        public static void Selector<TContext>(this ISingleChild<TContext> b,
+            Action<IMultiChildren<CompositeBuilder<TContext>, TContext>> buildAction, string? name = null)
+        {
+            var builder = new CompositeBuilder<TContext>(name);
+            buildAction(builder);
+            b.Set(builder.Build((c, n) => new SelectorComposite<TContext>(n, c)));
         }
     }
 }
