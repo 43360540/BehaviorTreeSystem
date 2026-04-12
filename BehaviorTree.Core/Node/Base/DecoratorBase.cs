@@ -12,7 +12,7 @@ namespace BehaviorTree
         public DecoratorBase(INode<TContext> child, string? name = null) : base(name)
         {
             Child = child ?? throw new ArgumentNullException(nameof(child));
-            _readOnlyChildren = child is IReadOnlyNode r ? new[] { r } : Array.Empty<IReadOnlyNode>();
+            _readOnlyChildren = child is IReadOnlyNode r ? [r] : [];
         }
 
         protected override void OnAbort(TContext ctx)
@@ -23,7 +23,7 @@ namespace BehaviorTree
 
         // IReadOnlyNode
         string IReadOnlyNode.Name => Name;
-        NodeStatus IReadOnlyNode.Status => LastStatus;
+        NodeStatus IReadOnlyNode.Status => DisplayStatus;
         IReadOnlyList<IReadOnlyNode> IReadOnlyNode.SubNodes => _readOnlyChildren;  
     }
 }

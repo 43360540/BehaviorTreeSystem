@@ -25,8 +25,8 @@ namespace BehaviorTree
         public INode<TContext> Build(Func<TLogic, INode<TContext>, string?, INode<TContext>> factory)
         {
             if (_child == null)
-                throw new ArgumentNullException(nameof(_child));
-                
+                throw new InvalidOperationException("Decorator must have One child.");
+
             return factory(_logic, _child, _name);
         }
     }

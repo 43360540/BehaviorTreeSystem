@@ -10,30 +10,32 @@ namespace BehaviorTree
             return i >= 0 ? name[..i] : name;
         }
 
-        protected string Name { get; private set; }
-
-        protected NodeStatus LastStatus { get; set; } = NodeStatus.None;
+        protected string Name { get; }
+        protected NodeStatus DisplayStatus { get; set; } = NodeStatus.None;
+        
+        private NodeStatus _lastStatus = NodeStatus.None;
 
         public NodeBase(string? name) => 
             Name = string.IsNullOrEmpty(name) ? CleanName(GetType().Name) : name;
 
         public NodeStatus Tick(TContext ctx, float dt)
         {
-            if (LastStatus == NodeStatus.None)
+            if (_lastStatus == NodeStatus.None)
             {
                 OnStart(ctx);
-                LastStatus = NodeStatus.Running;
+                _lastStatus = NodeStatus.Running;
             }
 
             NodeStatus status = OnTick(ctx, dt);
             if (status == NodeStatus.None)
                 throw new InvalidOperationException("OnTick must not return NodeStatus.None.");
-            LastStatus = status;
+            _lastStatus = status;
+            DisplayStatus = status;
 
-            if (LastStatus != NodeStatus.Running)
+            if (_lastStatus != NodeStatus.Running)
             {
-                OnStop(ctx, LastStatus);
-                SelfReset();
+                OnStop(ctx, _lastStatus);
+                Reset();
             }
 
             return status;
@@ -41,10 +43,16 @@ namespace BehaviorTree
 
         public void Abort(TContext ctx)
         {
-            if (LastStatus == NodeStatus.None)
+            if (_lastStatus == NodeStatus.None)
                 return;
             OnAbort(ctx);
-            SelfReset();            
+            Reset();            
+        }
+
+        private void Reset()
+        {
+            _lastStatus = NodeStatus.None;
+            OnReset();
         }
 
         protected abstract NodeStatus OnTick(TContext ctx, float dt);
@@ -56,11 +64,5 @@ namespace BehaviorTree
         protected virtual void OnAbort(TContext ctx) { }
 
         protected virtual void OnReset() { }
-
-        private void SelfReset()
-        {
-            LastStatus = NodeStatus.None;
-            OnReset();
-        }
     }
 }
