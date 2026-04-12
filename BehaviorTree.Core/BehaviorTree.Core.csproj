@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <UnityPluginPath>../Assets/Plugins/BehaviorTree.Core</UnityPluginPath>
+  </PropertyGroup>
+
+  <Target Name="CopyToUnity" AfterTargets="Build">
+    <Copy SourceFiles="$(OutputPath)BehaviorTree.Core.dll"
+      DestinationFolder="$(UnityPluginPath)"/>
+  </Target>
+
+</Project>

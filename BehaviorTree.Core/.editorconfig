@@ -1,0 +1,87 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.cs]
+indent_size = 4
+
+# -------------------------
+# Common formatting choices
+# -------------------------
+csharp_new_line_before_open_brace = all
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+# -------------------------
+# var (prefer explicit types)
+# -------------------------
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = false:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# -------------------------
+# using placement
+# -------------------------
+csharp_using_directive_placement = outside_namespace:warning
+
+# -------------------------
+# Naming conventions (v1)
+# -------------------------
+
+# Styles
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+dotnet_naming_style.interface_prefix_I.capitalization = pascal_case
+dotnet_naming_style.interface_prefix_I.required_prefix = I
+
+dotnet_naming_style.private_field_underscore.capitalization = camel_case
+dotnet_naming_style.private_field_underscore.required_prefix = _
+
+dotnet_naming_style.type_parameter_prefix_T.capitalization = pascal_case
+dotnet_naming_style.type_parameter_prefix_T.required_prefix = T
+
+# Symbol groups
+dotnet_naming_symbols.public_api.applicable_kinds = class, struct, interface, enum, delegate, method, property, event, field
+dotnet_naming_symbols.public_api.applicable_accessibilities = public, internal, protected, protected_internal, private_protected
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = public, internal, protected, protected_internal, private_protected
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+dotnet_naming_symbols.locals.applicable_kinds = local
+dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
+
+# Rules
+dotnet_naming_rule.public_api_pascal.symbols = public_api
+dotnet_naming_rule.public_api_pascal.style = pascal_case
+dotnet_naming_rule.public_api_pascal.severity = warning
+
+dotnet_naming_rule.interfaces_I_pascal.symbols = interfaces
+dotnet_naming_rule.interfaces_I_pascal.style = interface_prefix_I
+dotnet_naming_rule.interfaces_I_pascal.severity = warning
+
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = private_field_underscore
+dotnet_naming_rule.private_fields_underscore.severity = warning
+
+dotnet_naming_rule.parameters_camel.symbols = parameters
+dotnet_naming_rule.parameters_camel.style = camel_case
+dotnet_naming_rule.parameters_camel.severity = warning
+
+dotnet_naming_rule.locals_camel.symbols = locals
+dotnet_naming_rule.locals_camel.style = camel_case
+dotnet_naming_rule.locals_camel.severity = warning
+
+dotnet_naming_rule.type_params_T.symbols = type_parameters
+dotnet_naming_rule.type_params_T.style = type_parameter_prefix_T
+dotnet_naming_rule.type_params_T.severity = warning
