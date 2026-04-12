@@ -8,7 +8,7 @@ namespace BehaviorTree
         public LeafBase(string? name = null) : base(name) {}
 
         string IReadOnlyNode.Name => Name;
-        NodeStatus IReadOnlyNode.Status => LastStatus;
+        NodeStatus IReadOnlyNode.Status => DisplayStatus;
         IReadOnlyList<IReadOnlyNode> IReadOnlyNode.SubNodes => Array.Empty<IReadOnlyNode>();
     }
 }

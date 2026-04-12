@@ -26,7 +26,7 @@ namespace BehaviorTree
 
         // IReadOnlyNode
         string IReadOnlyNode.Name => Name;
-        NodeStatus IReadOnlyNode.Status => LastStatus;
+        NodeStatus IReadOnlyNode.Status => DisplayStatus;
         IReadOnlyList<IReadOnlyNode> IReadOnlyNode.SubNodes => _readOnlyChildren;
     }
 }

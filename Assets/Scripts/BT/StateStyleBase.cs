@@ -5,20 +5,6 @@ using System.Collections.Generic;
 
 namespace BehaviorTree.StateStyle
 {
-    public sealed record StateStyleMethodInfo
-    {
-        public MethodInfo Method { get; }
-        public StateDefAttribute Attribute { get; }
-        public string Name { get; }
-
-        public StateStyleMethodInfo(MethodInfo method, StateDefAttribute attribute, string name)
-        {
-            Method = method;
-            Attribute = attribute;
-            Name = name;
-        }
-    }
-
     public abstract class StateStyleBase<TSelf, TStates> : MonoBTRunner<TSelf> 
     where TStates : struct, Enum where TSelf : StateStyleBase<TSelf, TStates>
     {
@@ -46,7 +32,7 @@ namespace BehaviorTree.StateStyle
             var roughInfos = typeof(TSelf)
                 .GetMethods(BindingFlags.Instance | BindingFlags.Public | 
                             BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
-                .Select(method => new StateStyleMethodInfo(method, method.GetCustomAttribute<StateDefAttribute>(), method.Name))
+                .Select(method => new StateStyleMethodInfo(method, method.GetCustomAttribute<StateDefAttribute>()))
                 .Where(x => x.Attribute != null);
 
             var methodInfos = CollectMethods(roughInfos);
@@ -105,10 +91,22 @@ namespace BehaviorTree.StateStyle
                     throw new InvalidOperationException();
 
                 // Create QuickAction from delegates that created before
-                var action = BTNodeFactory<TSelf>.Action( new QuickAction<TSelf>(
+                var action = new ActionLeaf<TSelf>( new QuickAction<TSelf>(
                                 onStart: start, onTick: tick, onStop: stop, onAbort: abort, onReset: reset), x.Key.ToString());
                 _actionLeaves.Add(x.Key, action);
             }
+        }
+    }
+
+    internal sealed record StateStyleMethodInfo
+    {
+        public MethodInfo Method { get; }
+        public StateDefAttribute Attribute { get; }
+
+        public StateStyleMethodInfo(MethodInfo method, StateDefAttribute attribute)
+        {
+            Method = method;
+            Attribute = attribute;
         }
     }
 }
