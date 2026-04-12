@@ -1,3 +1,5 @@
+using System;
+
 namespace BehaviorTree
 {
     // Memory Sequence
@@ -41,6 +43,25 @@ namespace BehaviorTree
             base.OnReset();
 
             _index = 0;
+        }
+    }
+
+    public static class SequenceExtension
+    {
+        public static TSelf Sequence<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
+            Action<IMultiChildren<CompositeBuilder<TContext>, TContext>> buildAction, string? name = null)
+        {
+            var builder = new CompositeBuilder<TContext>(name);
+            buildAction(builder);
+            return b.Add(builder.Build((c, n) => new SequenceComposite<TContext>(n, c)));
+        }
+
+        public static void Sequence<TContext>(this ISingleChild<TContext> b,
+            Action<IMultiChildren<CompositeBuilder<TContext>, TContext>> buildAction, string? name = null)
+        {
+            var builder = new CompositeBuilder<TContext>(name);
+            buildAction(builder);
+            b.Set(builder.Build((c, n) => new SequenceComposite<TContext>(n, c)));
         }
     }
 }

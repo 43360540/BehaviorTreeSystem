@@ -65,4 +65,23 @@ namespace BehaviorTree
                 _statuses[i] = NodeStatus.None;
         }
     }
+
+    public static class ParallelExtension
+    {
+        public static TSelf Parallel<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
+            Action<IMultiChildren<CompositeBuilder<TContext>, TContext>> buildAction, string? name = null)
+        {
+            var builder = new CompositeBuilder<TContext>(name);
+            buildAction(builder);
+            return b.Add(builder.Build((c, n) => new ParallelComposite<TContext>(n, c)));
+        }
+
+        public static void Parallel<TContext>(this ISingleChild<TContext> b,
+            Action<IMultiChildren<CompositeBuilder<TContext>, TContext>> buildAction, string? name = null)
+        {
+            var builder = new CompositeBuilder<TContext>(name);
+            buildAction(builder);
+            b.Set(builder.Build((c, n) => new ParallelComposite<TContext>(n, c)));
+        }
+    }
 }
