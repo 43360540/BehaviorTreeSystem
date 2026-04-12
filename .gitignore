@@ -106,3 +106,9 @@ InitTestScene*.unity*
 
 # AI
 .claude/
+
+# BehaviorTree.Core
+!BehaviorTree.Core/BehaviorTree.Core.sln
+!BehaviorTree.Core/BehaviorTree.Core.csproj
+BehaviorTree.Core/bin/
+BehaviorTree.Core/obj/
