@@ -15,9 +15,7 @@ namespace BehaviorTree
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            if (_expected)
-                return _condition.Evaluate(ctx, dt) ? NodeStatus.Success : NodeStatus.Failure;
-            return _condition.Evaluate(ctx, dt) ? NodeStatus.Failure : NodeStatus.Success;
+            return _condition.Evaluate(ctx, dt) == _expected ? NodeStatus.Success : NodeStatus.Failure;
         }
     }
 

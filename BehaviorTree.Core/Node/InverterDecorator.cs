@@ -20,17 +20,17 @@ namespace BehaviorTree
         public static TSelf Inverter<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
             Action<ISingleChild<TContext>> buildAction, string? name = null)
         {
-            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(null, name);
+            var builder = new DecoratorBuilder<TContext>(name);
             buildAction(builder);
-            return b.Add(builder.Build((ic, c, n) => new InverterDecorator<TContext>(c, n)));
+            return b.Add(builder.Build((c, n) => new InverterDecorator<TContext>(c, n)));
         }
 
         public static void Inverter<TContext>(this ISingleChild<TContext> b,
             Action<ISingleChild<TContext>> buildAction, string? name = null)
         {
-            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(null, name);
+            var builder = new DecoratorBuilder<TContext>(name);
             buildAction(builder);
-            b.Set(builder.Build((ic, c, n) => new InverterDecorator<TContext>(c, n)));
+            b.Set(builder.Build((c, n) => new InverterDecorator<TContext>(c, n)));
         }
     }
 }
