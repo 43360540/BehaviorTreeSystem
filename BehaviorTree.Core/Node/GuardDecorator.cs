@@ -43,79 +43,71 @@ namespace BehaviorTree
         public static TSelf When<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
             ICondition<TContext> condition, Action<ISingleChild<TContext>> buildAction, string? name = null)
         {
-            var builder = new TDecoratorBuilder<ICondition<TContext>, TContext>(condition, name);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(condition, name);
             buildAction(builder);
-            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(
-                ic ?? throw new InvalidOperationException("GuardDecorator must have ICondition when new()."), c, n)));
+            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
         }
 
         public static TSelf When<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
             Func<TContext, float, bool> predicate, Action<ISingleChild<TContext>> buildAction, string? name = "When")
         {
             var qCondition = new QuickCondition<TContext>(predicate);
-            var builder = new TDecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
             buildAction(builder);
-            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(
-                ic ?? throw new InvalidOperationException("GuardDecorator must have ICondition when new()."), c, n)));
+            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
         }
 
         public static TSelf When<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
             Func<float, bool> predicate, Action<ISingleChild<TContext>> buildAction, string? name = "When")
         {
             var qCondition = new QuickCondition<TContext>(predicate);
-            var builder = new TDecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
             buildAction(builder);
-            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(
-                ic ?? throw new InvalidOperationException("GuardDecorator must have ICondition when new()."), c, n)));
+            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
         }
 
         public static TSelf When<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
             Func<bool> predicate, Action<ISingleChild<TContext>> buildAction, string? name = "When")
         {
             var qCondition = new QuickCondition<TContext>(predicate);
-            var builder = new TDecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
             buildAction(builder);
-            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(
-                ic ?? throw new InvalidOperationException("GuardDecorator must have ICondition when new()."), c, n)));
+            return b.Add(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
         }
 
         public static void When<TContext>(this ISingleChild<TContext> b,
             ICondition<TContext> condition, Action<ISingleChild<TContext>> buildAction, string? name = null)
         {
-            var builder = new TDecoratorBuilder<ICondition<TContext>, TContext>(condition, name);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(condition, name);
             buildAction(builder);
-            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(
-                ic ?? throw new InvalidOperationException("GuardDecorator must have ICondition when new()."), c, n)));
+            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
         }
 
         public static void When<TContext>(this ISingleChild<TContext> b,
             Func<TContext, float, bool> predicate, Action<ISingleChild<TContext>> buildAction, string? name = "When")
         {
             var qCondition = new QuickCondition<TContext>(predicate);
-            var builder = new TDecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
             buildAction(builder);
-            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(
-                ic ?? throw new InvalidOperationException("GuardDecorator must have ICondition when new()."), c, n)));
+            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
         }
 
         public static void When<TContext>(this ISingleChild<TContext> b,
             Func<float, bool> predicate, Action<ISingleChild<TContext>> buildAction, string? name = "When")
         {
             var qCondition = new QuickCondition<TContext>(predicate);
-            var builder = new TDecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
             buildAction(builder);
-            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(
-                ic ?? throw new InvalidOperationException("GuardDecorator must have ICondition when new()."), c, n)));
+            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
         }
 
         public static void When<TContext>(this ISingleChild<TContext> b,
             Func<bool> predicate, Action<ISingleChild<TContext>> buildAction, string? name = "When")
         {
             var qCondition = new QuickCondition<TContext>(predicate);
-            var builder = new TDecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
+            var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(qCondition, name);
             buildAction(builder);
-            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(
-                ic ?? throw new InvalidOperationException("GuardDecorator must have ICondition when new()."), c, n)));
+            b.Set(builder.Build((ic, c, n) => new GuardDecorator<TContext>(ic, c, n)));
         }
     }
 }

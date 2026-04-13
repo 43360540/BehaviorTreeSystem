@@ -4,7 +4,7 @@ namespace BehaviorTree
 {
     public sealed class InverterDecorator<TContext> : DecoratorBase<TContext>
     {
-        public InverterDecorator(INode<TContext> child, string? name = null) : base(child, name ?? "Not") { }
+        public InverterDecorator(INode<TContext> child, string? name = null) : base(child, name ?? "Inverter") { }
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
