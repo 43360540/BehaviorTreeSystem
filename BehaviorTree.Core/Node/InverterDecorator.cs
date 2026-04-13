@@ -17,7 +17,7 @@ namespace BehaviorTree
 
     public static class InverterExtension
     {
-        public static TSelf Not<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
+        public static TSelf Inverter<TSelf, TContext>(this IMultiChildren<TSelf, TContext> b,
             Action<ISingleChild<TContext>> buildAction, string? name = null)
         {
             var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(null, name);
@@ -25,7 +25,7 @@ namespace BehaviorTree
             return b.Add(builder.Build((ic, c, n) => new InverterDecorator<TContext>(c, n)));
         }
 
-        public static void Not<TContext>(this ISingleChild<TContext> b,
+        public static void Inverter<TContext>(this ISingleChild<TContext> b,
             Action<ISingleChild<TContext>> buildAction, string? name = null)
         {
             var builder = new DecoratorBuilder<ICondition<TContext>, TContext>(null, name);
