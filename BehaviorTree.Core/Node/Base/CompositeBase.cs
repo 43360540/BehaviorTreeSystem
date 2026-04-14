@@ -24,6 +24,12 @@ namespace BehaviorTree
                 .ToArray();
         }
 
+        protected override void OnTimeElapse(float dt)
+        {
+            foreach (var c in Children)
+                c.TimeElapse(dt);
+        }
+
         // IReadOnlyNode
         string IReadOnlyNode.Name => Name;
         NodeStatus IReadOnlyNode.Status => DisplayStatus;
