@@ -2,7 +2,7 @@ using System;
 
 namespace BehaviorTree
 {
-    public class DecoratorBuilder<TLogic, TContext> : ISingleChild<TContext> where TLogic : class
+    public class DecoratorBuilder<TLogic, TContext> : ISingleChild<TContext>
     {
         private INode<TContext>? _child;
         private readonly TLogic _logic;

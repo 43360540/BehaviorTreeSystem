@@ -12,21 +12,30 @@ namespace BehaviorTree
 
         protected string Name { get; }
         protected NodeStatus DisplayStatus { get; set; } = NodeStatus.None;
+        protected float? DeltaTime { get; private set; }
         
         private NodeStatus _lastStatus = NodeStatus.None;
 
         public NodeBase(string? name) => 
             Name = string.IsNullOrEmpty(name) ? CleanName(GetType().Name) : name;
 
+        public void TimeElapse(float dt)
+        {
+            DeltaTime = dt;
+            OnTimeElapse(dt);
+        }
         public NodeStatus Tick(TContext ctx, float dt)
         {
+            if (DeltaTime == null)
+                throw new InvalidOperationException("TimeElapse() must be called before Tick().");
+
             if (_lastStatus == NodeStatus.None)
             {
                 OnStart(ctx);
                 _lastStatus = NodeStatus.Running;
             }
 
-            NodeStatus status = OnTick(ctx, dt);
+            NodeStatus status = OnTick(ctx, DeltaTime.Value);
             if (status == NodeStatus.None)
                 throw new InvalidOperationException("OnTick must not return NodeStatus.None.");
             _lastStatus = status;
@@ -54,6 +63,8 @@ namespace BehaviorTree
             _lastStatus = NodeStatus.None;
             OnReset();
         }
+
+        protected virtual void OnTimeElapse(float dt) { }
 
         protected abstract NodeStatus OnTick(TContext ctx, float dt);
 

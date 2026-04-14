@@ -15,6 +15,11 @@ namespace BehaviorTree
             _readOnlyChildren = child is IReadOnlyNode r ? [r] : [];
         }
 
+        protected override void OnTimeElapse(float dt)
+        {
+            Child.TimeElapse(dt);
+        }
+
         protected override void OnAbort(TContext ctx)
         {
             base.OnAbort(ctx);
