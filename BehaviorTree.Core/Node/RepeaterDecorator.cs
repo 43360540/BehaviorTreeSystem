@@ -10,7 +10,7 @@ namespace BehaviorTree
         public RepeaterDecorator(int times, INode<TContext> child, string? name = null) : base(child, name ?? "Repeater")
         {
             if (times <= 0)
-                throw new ArgumentException("RepeaterDecoration.times cannot be below 1 time");
+                throw new ArgumentException("RepeaterDecorator.times cannot be below 1 time");
 
             _times = times;
         }
@@ -20,9 +20,9 @@ namespace BehaviorTree
             var status = Child.Tick(ctx, dt);
             if (status == NodeStatus.Success)
             {
+                _currentTimes++;
                 if (_currentTimes >= _times)
                     return NodeStatus.Success;
-                _currentTimes++;
 
                 return NodeStatus.Running;
             }
@@ -47,7 +47,7 @@ namespace BehaviorTree
         }
 
         public static void Repeater<TContext>(this ISingleChild<TContext> b,
-             int times, Action<ISingleChild<TContext>> buildAction, string? name = null)
+            int times, Action<ISingleChild<TContext>> buildAction, string? name = null)
         {
             var builder = new DecoratorBuilder<int, TContext>(times, name);
             buildAction(builder);

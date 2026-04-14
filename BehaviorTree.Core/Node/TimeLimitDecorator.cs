@@ -45,7 +45,7 @@ namespace BehaviorTree
         }
 
         public static void TimeLimit<TContext>(this ISingleChild<TContext> b,
-             float timeLimit, Action<ISingleChild<TContext>> buildAction, string? name = null)
+            float timeLimit, Action<ISingleChild<TContext>> buildAction, string? name = null)
         {
             var builder = new DecoratorBuilder<float, TContext>(timeLimit, name);
             buildAction(builder);
