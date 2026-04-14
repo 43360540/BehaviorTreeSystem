@@ -7,8 +7,14 @@ namespace BehaviorTree
         private readonly float _timeLimit;
         private float _timer = 0;
 
-        public TimeLimitDecorator(float timeLimit, INode<TContext> child, string? name = null) : base(child, name ?? "TimeLimit") =>
+        public TimeLimitDecorator(float timeLimit, INode<TContext> child, string? name = null) : base(child, name ?? "TimeLimit")
+        {
+            if (timeLimit <= 0)
+                throw new ArgumentException("TimeLimitDecorator.timeLimit cannot be below 0.");
+
             _timeLimit = timeLimit;
+        }
+            
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
