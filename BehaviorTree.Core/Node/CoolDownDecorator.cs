@@ -4,8 +4,8 @@ namespace BehaviorTree
 {
     public sealed class CoolDownDecorator<TContext> : DecoratorBase<TContext>, IGuard<TContext>
     {
+        private readonly float _cd;
         private float _elapsed;
-        private float _cd;
         private bool? _cachedResult = null;
 
         protected override void OnTimeElapse(float dt)
