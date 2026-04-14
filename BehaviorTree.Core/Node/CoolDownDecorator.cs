@@ -67,7 +67,7 @@ namespace BehaviorTree
         }
 
         public static void CoolDown<TContext>(this ISingleChild<TContext> b,
-             float coolDown, Action<ISingleChild<TContext>> buildAction, string? name = null)
+            float coolDown, Action<ISingleChild<TContext>> buildAction, string? name = null)
         {
             var builder = new DecoratorBuilder<float, TContext>(coolDown, name);
             buildAction(builder);
