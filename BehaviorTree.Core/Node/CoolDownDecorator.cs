@@ -19,7 +19,7 @@ namespace BehaviorTree
         public CoolDownDecorator(float coolDown, INode<TContext> child, string? name = null) : base(child, name ?? "CoolDown")
         {
             if (coolDown <= 0)
-                throw new InvalidOperationException("CoolDownDecorator.coolDown cannot be below 0.");
+                throw new ArgumentException("CoolDownDecorator.coolDown cannot be below 0.");
             
             _cd = coolDown;
             _elapsed = coolDown + 1e-4f;
