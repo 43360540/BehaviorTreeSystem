@@ -17,11 +17,14 @@ namespace BehaviorTree
             if (prevStatus != NodeStatus.Failure)
                 return prevStatus;
 
-            for (int i = _activeIndex + 1; i < Children.Count(); i++)
+            for (int i = _activeIndex + 1; i < Children.Length; i++)
             {
                 var status = Children[i].Tick(ctx, dt);
                 if (status != NodeStatus.Failure)
+                {
+                    _activeIndex = i;
                     return status;
+                }
             }
             return NodeStatus.Failure;
         }
@@ -44,7 +47,7 @@ namespace BehaviorTree
         {
             var builder = new CompositeBuilder<TContext>(name);
             buildAction(builder);
-            return b.Add(builder.Build((c, n) => new SelectorComposite<TContext>(n, c)));
+            return b.Add(builder.Build((c, n) => new MemorialSelectorComposite<TContext>(n, c)));
         }
 
         public static void MemorialSelector<TContext>(this ISingleChild<TContext> b,
@@ -52,7 +55,7 @@ namespace BehaviorTree
         {
             var builder = new CompositeBuilder<TContext>(name);
             buildAction(builder);
-            b.Set(builder.Build((c, n) => new SelectorComposite<TContext>(n, c)));
+            b.Set(builder.Build((c, n) => new MemorialSelectorComposite<TContext>(n, c)));
         }
     }
 }
