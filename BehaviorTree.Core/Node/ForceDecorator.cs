@@ -9,7 +9,7 @@ namespace BehaviorTree
         public ForceDecorator(NodeStatus forced, INode<TContext> child, string? name = null) 
             : base(child, name ?? forced.ToString())
         {
-            if (forced != NodeStatus.Success || forced != NodeStatus.Failure)
+            if (forced != NodeStatus.Success && forced != NodeStatus.Failure)
                 throw new ArgumentException("ForceDecorator only accepts Success or Failure.");
             
             _forced = forced;
