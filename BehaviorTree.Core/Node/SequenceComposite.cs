@@ -7,8 +7,9 @@ namespace BehaviorTree
     {
         private int _index = 0;
 
-        public SequenceComposite(string? name = null, params INode<TContext>[] children) : 
-            base(name ?? "Sequence", children) { }
+        public SequenceComposite(string? name = null, params INode<TContext>[] children) :
+            base(name ?? "Sequence", children)
+        { }
 
         protected override void OnStart(TContext ctx)
         {
@@ -21,7 +22,7 @@ namespace BehaviorTree
         {
             while (_index < Children.Length)
             {
-                NodeStatus status = Children[_index].Tick(ctx, dt);
+                NodeStatus status = Children[_index].Tick(ctx);
 
                 if (status != NodeStatus.Success)
                     return status;

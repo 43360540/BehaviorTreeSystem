@@ -29,7 +29,7 @@ namespace BehaviorTree
                 Child.Abort(ctx);
                 return NodeStatus.Failure;
             }
-            return Child.Tick(ctx, dt);
+            return Child.Tick(ctx);
         }
 
         protected override void OnReset()

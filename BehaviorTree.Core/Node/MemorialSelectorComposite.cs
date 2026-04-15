@@ -8,18 +8,19 @@ namespace BehaviorTree
     {
         private int _activeIndex = 0;
 
-        public MemorialSelectorComposite(string? name = null, params INode<TContext>[] children) : 
-            base(name ?? "MemorialSelector", children) { }
+        public MemorialSelectorComposite(string? name = null, params INode<TContext>[] children) :
+            base(name ?? "MemorialSelector", children)
+        { }
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            var prevStatus = Children[_activeIndex].Tick(ctx, dt);
+            var prevStatus = Children[_activeIndex].Tick(ctx);
             if (prevStatus != NodeStatus.Failure)
                 return prevStatus;
 
             for (int i = _activeIndex + 1; i < Children.Length; i++)
             {
-                var status = Children[i].Tick(ctx, dt);
+                var status = Children[i].Tick(ctx);
                 if (status != NodeStatus.Failure)
                 {
                     _activeIndex = i;

@@ -14,7 +14,7 @@ namespace BehaviorTree
 
             _timeLimit = timeLimit;
         }
-            
+
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
@@ -25,7 +25,7 @@ namespace BehaviorTree
                 return NodeStatus.Failure;
             }
 
-            return Child.Tick(ctx, dt);
+            return Child.Tick(ctx);
         }
 
         protected override void OnReset()

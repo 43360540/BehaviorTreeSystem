@@ -22,7 +22,7 @@ namespace BehaviorTree
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            var status = Child.Tick(ctx, dt);
+            var status = Child.Tick(ctx);
             if (status == NodeStatus.Success)
             {
                 _currentTimes++;
@@ -34,7 +34,7 @@ namespace BehaviorTree
                 return NodeStatus.Running;
             }
 
-            return status;  
+            return status;
         }
 
         protected override void OnReset()

@@ -16,7 +16,7 @@ namespace BehaviorTree
         public void Tick(float duration)
         {
             Tree.TimeElapse(duration);
-            Tree.Tick(Context, duration);
+            Tree.Tick(Context);
         }
 
         public void Abort()
