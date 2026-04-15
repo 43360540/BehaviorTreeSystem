@@ -7,8 +7,9 @@ namespace BehaviorTree
     {
         private INode<TContext>? _activeChild = null;
 
-        public SelectorComposite(string? name = null, params INode<TContext>[] children) : 
-            base(name ?? "Selector", children) { }
+        public SelectorComposite(string? name = null, params INode<TContext>[] children) :
+            base(name ?? "Selector", children)
+        { }
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
@@ -29,7 +30,7 @@ namespace BehaviorTree
                 else
                     _activeChild = c;
 
-        // ------------------------------------------------------------------
+                // ------------------------------------------------------------------
 
                 if (prev != null && prev != _activeChild)
                 {
@@ -37,7 +38,7 @@ namespace BehaviorTree
                     prev = null;
                 }
 
-                NodeStatus status = _activeChild.Tick(ctx, dt);
+                NodeStatus status = _activeChild.Tick(ctx);
 
                 if (status == NodeStatus.Failure)
                     continue;

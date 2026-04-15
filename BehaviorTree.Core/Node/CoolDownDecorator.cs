@@ -20,7 +20,7 @@ namespace BehaviorTree
         {
             if (coolDown <= 0)
                 throw new ArgumentException("CoolDownDecorator.coolDown cannot be below 0.");
-            
+
             _cd = coolDown;
             _elapsed = coolDown + 1e-4f;
         }
@@ -41,7 +41,7 @@ namespace BehaviorTree
                 Child.Abort(ctx);
                 return NodeStatus.Failure;
             }
-            return Child.Tick(ctx, dt);
+            return Child.Tick(ctx);
         }
 
         protected override void OnStop(TContext ctx, NodeStatus stopStatus)

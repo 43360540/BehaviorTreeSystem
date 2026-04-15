@@ -7,7 +7,7 @@ namespace BehaviorTree
     {
         private readonly NodeStatus[] _statuses;
 
-        public ParallelComposite(string? name = null, params INode<TContext>[] children) : 
+        public ParallelComposite(string? name = null, params INode<TContext>[] children) :
             base(name ?? "Parallel", children) =>
             _statuses = new NodeStatus[children.Length];
 
@@ -26,14 +26,14 @@ namespace BehaviorTree
                 if (_statuses[i] == NodeStatus.Success)
                     continue;
 
-                _statuses[i] = Children[i].Tick(ctx, dt);
+                _statuses[i] = Children[i].Tick(ctx);
 
                 if (_statuses[i] == NodeStatus.Failure)
                 {
                     AbortAllChildren(ctx);
                     return NodeStatus.Failure;
                 }
-                    
+
                 if (_statuses[i] == NodeStatus.Running)
                     hasRunning = true;
             }

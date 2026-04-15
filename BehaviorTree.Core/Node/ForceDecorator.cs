@@ -6,21 +6,21 @@ namespace BehaviorTree
     {
         private readonly NodeStatus _forced;
 
-        public ForceDecorator(NodeStatus forced, INode<TContext> child, string? name = null) 
+        public ForceDecorator(NodeStatus forced, INode<TContext> child, string? name = null)
             : base(child, name ?? forced.ToString())
         {
             if (forced != NodeStatus.Success && forced != NodeStatus.Failure)
                 throw new ArgumentException("ForceDecorator only accepts Success or Failure.");
-            
+
             _forced = forced;
         }
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            var status = Child.Tick(ctx, dt);
+            var status = Child.Tick(ctx);
             if (status != NodeStatus.Running)
                 return _forced;
-            
+
             return NodeStatus.Running;
         }
     }

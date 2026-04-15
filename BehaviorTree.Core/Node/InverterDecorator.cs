@@ -8,7 +8,7 @@ namespace BehaviorTree
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            var childStatus = Child.Tick(ctx, dt);
+            var childStatus = Child.Tick(ctx);
             if (childStatus == NodeStatus.Running)
                 return NodeStatus.Running;
             return childStatus == NodeStatus.Success ? NodeStatus.Failure : NodeStatus.Success;

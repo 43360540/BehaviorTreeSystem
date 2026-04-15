@@ -14,7 +14,7 @@ namespace BehaviorTree
         {
             if (node == null)
                 throw new ArgumentNullException(nameof(node));
-            
+
             _children.Add(node);
             return this;
         }
@@ -23,7 +23,7 @@ namespace BehaviorTree
         {
             if (_children.Count <= 0)
                 throw new InvalidOperationException("Composite must have at least ONE child.");
-                
+
             return factory(_children.ToArray(), _name);
         }
     }

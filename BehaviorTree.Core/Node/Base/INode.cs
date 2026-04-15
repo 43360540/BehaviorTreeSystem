@@ -3,7 +3,7 @@ namespace BehaviorTree
     public interface INode<TContext>
     {
         void TimeElapse(float dt);
-        NodeStatus Tick(TContext ctx, float dt);
+        NodeStatus Tick(TContext ctx);
         void Abort(TContext ctx);
     }
 
