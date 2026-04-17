@@ -1,15 +1,28 @@
 using BehaviorTree;
+using UnityEngine;
 
 namespace BehaviorTree.StateStyle
 {
     public class StateStyleSample : StateStyleBase<StateStyleSample, StateStyleSample.State>
     {
-        public int Number { get; private set;} = 0;
+        public int Number { get; private set; } = 0;
+        private Transform _target;
 
-        protected override void Start()
+        #region See
+        [StateDef("See", Phase.Tick)]
+        private NodeStatus SeeTick(float dt)
         {
-            base.Start();
+            return NodeStatus.Running;
         }
+        #endregion
+
+        #region Hear
+        [StateDef("Hear", Phase.Tick)]
+        private NodeStatus Hear(float dt)
+        {
+            return NodeStatus.Running;
+        }
+        #endregion
 
         #region Idle
         [StateDef("Idle", Phase.Start)]
@@ -21,7 +34,7 @@ namespace BehaviorTree.StateStyle
         private NodeStatus IdleTick(float dt)
         {
             // ...
-            return NodeStatus.Success;   
+            return NodeStatus.Success;
         }
         [StateDef("Idle", Phase.Stop)]
         private void IdleStop(NodeStatus stopStatus)
@@ -40,7 +53,7 @@ namespace BehaviorTree.StateStyle
         private NodeStatus AttackTick(float dt)
         {
             // ...
-            return NodeStatus.Running;   
+            return NodeStatus.Running;
         }
         [StateDef("Attack", Phase.Stop)]
         private void AttackStop(NodeStatus stopStatus)
@@ -59,7 +72,7 @@ namespace BehaviorTree.StateStyle
         private NodeStatus AlertTick(float dt)
         {
             // ...
-            return NodeStatus.Running;   
+            return NodeStatus.Running;
         }
         [StateDef("Alert", Phase.Stop)]
         private void AlertStop(NodeStatus stopStatus)
@@ -73,21 +86,36 @@ namespace BehaviorTree.StateStyle
             Idle,
             Attack,
             Alert,
+            Hear,
+            See,
         }
 
         protected override INode<StateStyleSample> CreateTree()
         {
             var tree = BTBuilder<StateStyleSample>.Build(root => root
-                .Selector(main => main
-                    .When(() => Number > 0, _ => _
-                        .Set(GetState(State.Attack))
+                .Parallel(root => root
+                    .Parallel(sense => sense
+                        .Add(GetState(State.See))
+                        .Add(GetState(State.Hear))
                     )
-                    .Add(GetState(State.Alert))
-                    .Add(GetState(State.Idle))
+                    .Selector(action => action
+                        .When(() => GetDistance(_target) <= 1f, _ => _
+                            .Set(GetState(State.Attack))
+                        )
+                        .When(() => GetDistance(_target) <= 10f, _ => _
+                            .Set(GetState(State.Alert))
+                        )
+                        .Add(GetState(State.Idle))
+                    )
                 )
             );
 
             return tree;
+        }
+
+        private float GetDistance(Transform target)
+        {
+            return Vector3.Magnitude(transform.position - target.position);
         }
     }
 }
