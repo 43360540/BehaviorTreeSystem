@@ -19,9 +19,10 @@ namespace BehaviorTree.StateStyle
             base.Awake();
         }
     
-        protected INode<TSelf> GetState(TStates state) =>
+        protected INode<TSelf> Get(TStates state) =>
             _actionLeaves[state];
 
+        // This reflection will be called only ONCE on Awake
         // 1. Scan every method within subclass TSelf and roughly exclude unneeded
         // 2. Collect needed and organize MethodInfos by States
         // 3. Build actions from given infos
@@ -73,7 +74,6 @@ namespace BehaviorTree.StateStyle
                 Action start = null;
                 Action<NodeStatus> stop = null;
                 Action abort = null;
-                Action reset = null;
                 Func<float, NodeStatus> tick = null;
 
                 // Create delegates from each MethodInfo if it's not null
@@ -81,10 +81,7 @@ namespace BehaviorTree.StateStyle
                     start = (Action)Delegate.CreateDelegate(typeof(Action), this, startInfo.Method);
                 if (x.Value.TryGetValue(Phase.Stop, out var stopInfo))
                     stop = (Action<NodeStatus>)Delegate.CreateDelegate(typeof(Action<NodeStatus>), this, stopInfo.Method);
-                if (x.Value.TryGetValue(Phase.Abort, out var abortInfo))
-                    abort = (Action)Delegate.CreateDelegate(typeof(Action), this, abortInfo.Method);
-                if (x.Value.TryGetValue(Phase.Reset, out var resetInfo))
-                    reset = (Action)Delegate.CreateDelegate(typeof(Action), this, resetInfo.Method);
+                abort = () => stop(NodeStatus.Failure);
                 if (x.Value.TryGetValue(Phase.Tick, out var tickInfo))
                     tick = (Func<float, NodeStatus>)Delegate.CreateDelegate(typeof(Func<float, NodeStatus>), this, tickInfo.Method);
                 else // Null tick is not allowed
@@ -92,7 +89,7 @@ namespace BehaviorTree.StateStyle
 
                 // Create QuickAction from delegates that created before
                 var action = new ActionLeaf<TSelf>( new QuickAction<TSelf>(
-                                onStart: start, onTick: tick, onStop: stop, onAbort: abort, onReset: reset), x.Key.ToString());
+                                onStart: start, onTick: tick, onStop: stop, onAbort: abort), x.Key.ToString());
                 _actionLeaves.Add(x.Key, action);
             }
         }
