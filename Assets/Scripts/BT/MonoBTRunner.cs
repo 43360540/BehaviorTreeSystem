@@ -4,6 +4,7 @@ namespace BehaviorTree
 {
     public abstract class MonoBTRunner<TContext> : MonoBehaviour
     {
+        [Header("BT Runner")]
         [SerializeField] private bool _debugMode = false;
         [SerializeField] private float _debugDuration = 3f;
         [SerializeField] private Rate _tickRate = Rate.Update;
@@ -22,12 +23,12 @@ namespace BehaviorTree
         protected virtual void Awake()
         {
             if (_context == null)
-                Debug.LogError($"[{GetType().Name}] Context not set. Use Inspector or SetContext() before Start(). ({gameObject.name})");
+                Debug.LogError($"[{GetType().Name}] Context not set. Use Inspector or SetContext() before MonoBTRunner.Awake(). ({gameObject.name})");
+            _bTRunner = new (_context, CreateTree());
         }
 
         protected virtual void Start()
         {
-            _bTRunner = new (_context, CreateTree());
             _rTree = _bTRunner.Tree as IReadOnlyNode;
 
             if (_rTree == null)
@@ -63,7 +64,7 @@ namespace BehaviorTree
             _bTRunner?.Abort();
         }
         // Set context programmatically if not assigned via Inspector
-        // !! Must be use before Start() !! 
+        // !! Must be use before MonoBTRunner.Awake() !! 
         protected void SetContext(TContext context)
         {
             if (_context == null)

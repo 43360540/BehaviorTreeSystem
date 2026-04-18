@@ -7,7 +7,7 @@ namespace BehaviorTree
         private readonly int? _times;
         private int _currentTimes = 0;
 
-        public RepeaterDecorator(int times, INode<TContext> child, string? name = null) : base(child, name ?? "Repeater")
+        public RepeaterDecorator(int times, INode<TContext> child, string? name = null) : base(child, name ?? $"Repeat: {times} time(s)")
         {
             if (times <= 0)
                 throw new ArgumentException("RepeaterDecorator.times cannot be below 1 time");
