@@ -54,6 +54,7 @@ namespace BehaviorTree
         {
             if (_lastStatus == NodeStatus.None)
                 return;
+            DisplayStatus = NodeStatus.None;
             OnAbort(ctx);
             Reset();
         }

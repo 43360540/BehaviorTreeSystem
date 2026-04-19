@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using BehaviorTree;
 using BehaviorTree.StateStyle;
 using UnityEngine;
@@ -18,11 +16,11 @@ public class NPCSample : StateStyleBase<NPCSample, NPCSample.State>
 
     private readonly int _attackTrigger = Animator.StringToHash("AttackTrigger");
     private readonly int _isAttacking = Animator.StringToHash("IsAttacking");
-    private Transform _target;
+    private Transform _target = null;
     private Vector3 _destination;
-    private float _timer;
-    private List<Collider> _targets = new();
+    private readonly Collider[] _overlapBuffer = new Collider[10];
 
+    public bool HasTarget => _target != null;
     public float TargetDistance =>
         _target == null ? 0f : (_target.position - transform.position).magnitude;
     public Vector3 TargetDirection
@@ -38,33 +36,15 @@ public class NPCSample : StateStyleBase<NPCSample, NPCSample.State>
     }
 
     #region Sense
-    [StateDef("Sense", Phase.Start)]
-    private void SenseStart()
-    {
-        _targets.Clear();
-    }
-
     [StateDef("Sense", Phase.Tick)]
     private NodeStatus SenseTick(float dt)
     {
-        List<Collider> condidate = _targets
-            .Where(t =>
-                Vector3.Magnitude(t.transform.position - transform.position) <= _senserMaxRadius)
-            .ToList();
-
-        if (condidate.Count == 0)
-            condidate = Physics.OverlapSphere(
-                transform.position, _senserMaxRadius, _targetLayer).ToList();
-        if (condidate.Count == 0)
+        int hit = Physics.OverlapSphereNonAlloc(
+            transform.position, _senserMaxRadius, _overlapBuffer, _targetLayer);
+        if (hit <= 0)
             return NodeStatus.Failure;
-        _target = condidate[Random.Range(0, condidate.Count)].transform;
+        _target = _overlapBuffer[Random.Range(0, hit)].transform;
         return NodeStatus.Success;
-    }
-
-    [StateDef("Sense", Phase.Stop)]
-    private void SenseStop(NodeStatus status)
-    {
-        _targets.Clear();
     }
     #endregion
 
@@ -120,6 +100,7 @@ public class NPCSample : StateStyleBase<NPCSample, NPCSample.State>
     [StateDef("Wander", Phase.Start)]
     private void WanderStart()
     {
+        _target = null;
         _destination = transform.position + GetRandonPos(-10f, 10f);
         _agent.speed = _walkSp;
     }
@@ -160,20 +141,20 @@ public class NPCSample : StateStyleBase<NPCSample, NPCSample.State>
     protected override INode<NPCSample> CreateTree()
     {
         var tree = BTBuilder<NPCSample>.Build(root => root
-            .Parallel(_ => _
-                .Repeater(_ => _
-                    .Force(NodeStatus.Success, _ => _
-                        .Set(Get(State.Sense))
+            .Parallel(x => x
+                // Sensor
+                .Repeater(x => x
+                    .Force(NodeStatus.Success, x => x
+                        .Throttle(0.3f, x => x
+                            .When(() => !HasTarget, x => x.Set(Get(State.Sense)))
+                        )
                     )
                 )
-                .Repeater(_ => _
-                    .Selector(_ => _
-                        .When(() => IsTargetInRange(3f), _ => _
-                            .Set(Get(State.Attack))
-                        )
-                        .When(() => IsTargetInRange(10f), _ => _
-                            .Set(Get(State.Chase))
-                        )
+                // Decitions
+                .Repeater(x => x
+                    .Selector(x => x
+                        .When(() => IsTargetInRange(3f), x => x.Set(Get(State.Attack)))
+                        .When(() => IsTargetInRange(10f), x => x.Set(Get(State.Chase)))
                         .Add(Get(State.Wander))
                     )
                 )
