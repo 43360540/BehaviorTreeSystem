@@ -22,7 +22,7 @@ namespace BehaviorTree
                 throw new ArgumentException("CoolDownDecorator.coolDown cannot be below 0.");
 
             _cd = coolDown;
-            _elapsed = coolDown + 1e-4f;
+            _elapsed = coolDown;
         }
 
         public bool CanEnter(TContext ctx, float dt)
