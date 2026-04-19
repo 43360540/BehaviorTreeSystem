@@ -22,7 +22,7 @@ namespace BehaviorTree
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
-            bool canContinue = _cachedResult ?? _condition.Evaluate(ctx, dt);
+            bool canContinue = _cachedResult ?? CanEnter(ctx, dt);
 
             if (!canContinue)
             {

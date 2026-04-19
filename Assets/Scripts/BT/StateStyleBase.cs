@@ -80,8 +80,10 @@ namespace BehaviorTree.StateStyle
                 if (x.Value.TryGetValue(Phase.Start, out var startInfo))
                     start = (Action)Delegate.CreateDelegate(typeof(Action), this, startInfo.Method);
                 if (x.Value.TryGetValue(Phase.Stop, out var stopInfo))
+                {
                     stop = (Action<NodeStatus>)Delegate.CreateDelegate(typeof(Action<NodeStatus>), this, stopInfo.Method);
-                abort = () => stop(NodeStatus.Failure);
+                    abort = () => stop(NodeStatus.Failure);
+                } 
                 if (x.Value.TryGetValue(Phase.Tick, out var tickInfo))
                     tick = (Func<float, NodeStatus>)Delegate.CreateDelegate(typeof(Func<float, NodeStatus>), this, tickInfo.Method);
                 else // Null tick is not allowed
