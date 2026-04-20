@@ -31,7 +31,7 @@ public class ItemDatabase
 
         foreach (var item in _sourceItems)
         {
-            _items.Add(item.itemID, item);
+            _items.Add(item.ItemID, item);
         }
     }
 
