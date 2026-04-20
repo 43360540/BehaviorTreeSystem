@@ -6,12 +6,12 @@ namespace Item
     [CreateAssetMenu(fileName = "Basic Item", menuName = "New Item/Basic Item")]
     public class ItemDef : ScriptableObject
     {
-        public GameObject itemPrefab;
-        public string itemID = "empty";
-        public string itemName = "Empty";
-        public Sprite icon;
-        public bool stackable = false;
-        public int maxStack = 0;
+        public GameObject ItemPrefab;
+        public string ItemID = "empty";
+        public string ItemName = "Empty";
+        public Sprite Icon;
+        public bool Stackable = false;
+        public int MaxStack = 0;
     }
 }
 
