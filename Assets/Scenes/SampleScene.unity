@@ -717,7 +717,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e729d25220f4db691a559778d4a619, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  _debugMode: 1
+  _debugMode: 0
   _debugDuration: 1
   _tickRate: 0
   _context: {fileID: 1194204551}
