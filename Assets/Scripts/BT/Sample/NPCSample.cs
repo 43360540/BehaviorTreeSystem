@@ -13,9 +13,10 @@ public class NPCSample : StateStyleBase<NPCSample, NPCSample.State>
     [SerializeField] private LayerMask _targetLayer;
     [Header("Anim")]
     [SerializeField] private Animator _anim;
-
+    // Animation Hash Key
     private readonly int _attackTrigger = Animator.StringToHash("AttackTrigger");
     private readonly int _isAttacking = Animator.StringToHash("IsAttacking");
+
     private Transform _target = null;
     private Vector3 _destination;
     private readonly Collider[] _overlapBuffer = new Collider[10];
@@ -39,6 +40,7 @@ public class NPCSample : StateStyleBase<NPCSample, NPCSample.State>
     [StateDef("Sense", Phase.Tick)]
     private NodeStatus SenseTick(float dt)
     {
+        Debug.Log("Sense was called");
         int hit = Physics.OverlapSphereNonAlloc(
             transform.position, _senserMaxRadius, _overlapBuffer, _targetLayer);
         if (hit <= 0)
@@ -65,7 +67,8 @@ public class NPCSample : StateStyleBase<NPCSample, NPCSample.State>
     [StateDef("Chase", Phase.Stop)]
     private void ChaseStop(NodeStatus status)
     {
-        _agent.ResetPath();
+        if (_agent.hasPath)
+            _agent.ResetPath();
     }
     #endregion
 
@@ -114,7 +117,8 @@ public class NPCSample : StateStyleBase<NPCSample, NPCSample.State>
     [StateDef("Wander", Phase.Stop)]
     private void WanderStop(NodeStatus status)
     {
-        _agent.ResetPath();
+        if (_agent.hasPath)
+            _agent.ResetPath();
     }
     #endregion
 
