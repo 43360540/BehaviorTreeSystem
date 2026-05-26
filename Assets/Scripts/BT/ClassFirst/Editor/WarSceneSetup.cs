@@ -19,25 +19,32 @@ public static class WarSceneSetup
     private const string SOURCE_SCENE_PATH = "Assets/Scenes/SampleScene.unity";
     private const string TARGET_SCENE_PATH = "Assets/Scenes/SampleScene_War.unity";
 
+    // Per-tint material assets. One sharedMaterial per (faction × class) so that
+    // 10000 NPCs collapse onto ~10 unique sharedMaterial references — required for
+    // GPU Instancing to actually batch draws.
+    //
+    // Why not MaterialPropertyBlock? URP Lit declares _BaseColor in the per-material
+    // CBUFFER, NOT in UNITY_INSTANCING_BUFFER, so MPB-driven color overrides are
+    // silently ignored once Enable GPU Instancing is checked on the material —
+    // every NPC ends up rendering with the sharedMaterial's color (all the same).
+    // Using distinct material assets sidesteps the shader's instanced-property
+    // limitation entirely.
+    private const string TINT_MAT_DIR = "Assets/Materials/Tints";
+
+    private static Material LoadTint(string name)
+    {
+        var path = $"{TINT_MAT_DIR}/{name}.mat";
+        var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (m == null) Debug.LogError($"[WarSetup] Missing tint material: {path}");
+        return m;
+    }
+
     // Per-team composition (sum = 5000). Ratios preserved from 100-per-team setup.
     private const int WARRIORS = 2000;
     private const int SPEARMEN = 1250;
     private const int ARCHERS  = 1000;
     private const int KNIGHTS  =  500;
     private const int HEALERS  =  250;
-
-    // Tints
-    private static readonly Color TeamA_Warrior  = new Color(0.85f, 0.20f, 0.20f);
-    private static readonly Color TeamA_Spearman = new Color(0.95f, 0.45f, 0.30f);
-    private static readonly Color TeamA_Archer   = new Color(0.95f, 0.75f, 0.30f);
-    private static readonly Color TeamA_Knight   = new Color(0.70f, 0.10f, 0.10f);
-    private static readonly Color TeamA_Healer   = new Color(1.00f, 0.85f, 0.85f);
-
-    private static readonly Color TeamB_Warrior  = new Color(0.20f, 0.40f, 0.85f);
-    private static readonly Color TeamB_Spearman = new Color(0.30f, 0.65f, 0.95f);
-    private static readonly Color TeamB_Archer   = new Color(0.30f, 0.85f, 0.85f);
-    private static readonly Color TeamB_Knight   = new Color(0.10f, 0.20f, 0.70f);
-    private static readonly Color TeamB_Healer   = new Color(0.85f, 0.95f, 1.00f);
 
     [MenuItem("Tools/BT War/Create War Scene")]
     public static void CreateWarScene()
@@ -150,14 +157,20 @@ public static class WarSceneSetup
         // Team A — frontline anchored at x = -15 (closer to TeamB).
         SpawnTeam(teamARoot.transform, oldEnemy, Faction.TeamA, sensorLayer,
             anchorX: -15f, facing: +1f,
-            warriorTint: TeamA_Warrior, spearmanTint: TeamA_Spearman,
-            archerTint: TeamA_Archer, knightTint: TeamA_Knight, healerTint: TeamA_Healer);
+            warriorMat:  LoadTint("TeamA_Warrior"),
+            spearmanMat: LoadTint("TeamA_Spearman"),
+            archerMat:   LoadTint("TeamA_Archer"),
+            knightMat:   LoadTint("TeamA_Knight"),
+            healerMat:   LoadTint("TeamA_Healer"));
 
         // Team B — frontline at x = +15
         SpawnTeam(teamBRoot.transform, oldEnemy, Faction.TeamB, sensorLayer,
             anchorX: +15f, facing: -1f,
-            warriorTint: TeamB_Warrior, spearmanTint: TeamB_Spearman,
-            archerTint: TeamB_Archer, knightTint: TeamB_Knight, healerTint: TeamB_Healer);
+            warriorMat:  LoadTint("TeamB_Warrior"),
+            spearmanMat: LoadTint("TeamB_Spearman"),
+            archerMat:   LoadTint("TeamB_Archer"),
+            knightMat:   LoadTint("TeamB_Knight"),
+            healerMat:   LoadTint("TeamB_Healer"));
 
         EditorSceneManager.MarkSceneDirty(scene);
 
@@ -204,7 +217,7 @@ public static class WarSceneSetup
     private static void SpawnTeam(
         Transform parent, GameObject template, Faction faction, LayerMask sensorLayer,
         float anchorX, float facing,
-        Color warriorTint, Color spearmanTint, Color archerTint, Color knightTint, Color healerTint)
+        Material warriorMat, Material spearmanMat, Material archerMat, Material knightMat, Material healerMat)
     {
         // Z layout: 30 m wide. Rows tile from front (closest to enemy) to back.
         const float ROW_SPACING = 1.6f;       // x distance between ranks
@@ -223,7 +236,7 @@ public static class WarSceneSetup
             int row = i / COLS_PER_ROW;
             int col = i % COLS_PER_ROW;
             Vector3 pos = FormationPos(anchorX, facing, rank + row, col, COLS_PER_ROW, ROW_SPACING, COL_SPACING);
-            SpawnNpc<WarriorRunner>(parent, template, $"Warrior_{i:D4}", pos, warriorTint, faction, sensorLayer,
+            SpawnNpc<WarriorRunner>(parent, template, $"Warrior_{i:D4}", pos, warriorMat, faction, sensorLayer,
                 walkSpeed: 3.5f, attackRange: 2f, sensorRadius: 12f, maxHp: 120f, dmg: 18f, facing: facing);
         }
         rank += (WARRIORS + COLS_PER_ROW - 1) / COLS_PER_ROW;
@@ -234,7 +247,7 @@ public static class WarSceneSetup
             int row = i / COLS_PER_ROW;
             int col = i % COLS_PER_ROW;
             Vector3 pos = FormationPos(anchorX, facing, rank + row, col, COLS_PER_ROW, ROW_SPACING, COL_SPACING);
-            SpawnNpc<SpearmanRunner>(parent, template, $"Spearman_{i:D4}", pos, spearmanTint, faction, sensorLayer,
+            SpawnNpc<SpearmanRunner>(parent, template, $"Spearman_{i:D4}", pos, spearmanMat, faction, sensorLayer,
                 walkSpeed: 3.5f, attackRange: 4f, sensorRadius: 13f, maxHp: 100f, dmg: 20f, facing: facing);
         }
         rank += (SPEARMEN + COLS_PER_ROW - 1) / COLS_PER_ROW;
@@ -245,7 +258,7 @@ public static class WarSceneSetup
             int row = i / COLS_PER_ROW;
             int col = i % COLS_PER_ROW;
             Vector3 pos = FormationPos(anchorX, facing, rank + row, col, COLS_PER_ROW, ROW_SPACING, COL_SPACING);
-            SpawnArcher(parent, template, $"Archer_{i:D4}", pos, archerTint, faction, sensorLayer,
+            SpawnArcher(parent, template, $"Archer_{i:D4}", pos, archerMat, faction, sensorLayer,
                 walkSpeed: 3.5f, attackRange: 9f, retreatRange: 4f, shootCooldown: 1.0f,
                 sensorRadius: 15f, maxHp: 70f, dmg: 18f, facing: facing);
         }
@@ -257,7 +270,7 @@ public static class WarSceneSetup
             int row = i / COLS_PER_ROW;
             int col = i % COLS_PER_ROW;
             Vector3 pos = FormationPos(anchorX, facing, rank + row, col, COLS_PER_ROW, ROW_SPACING, COL_SPACING);
-            SpawnHealer(parent, template, $"Healer_{i:D4}", pos, healerTint, faction, sensorLayer,
+            SpawnHealer(parent, template, $"Healer_{i:D4}", pos, healerMat, faction, sensorLayer,
                 walkSpeed: 4f, healRange: 6f, retreatRange: 4f, healCooldown: 1.5f,
                 sensorRadius: 10f, maxHp: 60f, healPower: 12f, facing: facing);
         }
@@ -272,7 +285,7 @@ public static class WarSceneSetup
             int col = i % COLS_PER_ROW;
             int knightRank = -(row + 1); // -1 = closest to enemy, -5 = furthest knight rank
             Vector3 pos = FormationPos(anchorX, facing, knightRank, col, COLS_PER_ROW, ROW_SPACING, COL_SPACING);
-            SpawnNpc<KnightRunner>(parent, template, $"Knight_{i:D4}", pos, knightTint, faction, sensorLayer,
+            SpawnNpc<KnightRunner>(parent, template, $"Knight_{i:D4}", pos, knightMat, faction, sensorLayer,
                 walkSpeed: 6f, attackRange: 2.5f, sensorRadius: 14f, maxHp: 150f, dmg: 28f, facing: facing);
         }
     }
@@ -299,7 +312,7 @@ public static class WarSceneSetup
             ActivateRecursive(go.transform.GetChild(i).gameObject);
     }
 
-    private static GameObject CloneTemplate(Transform parent, GameObject template, string name, Vector3 pos, Color tint, float facing)
+    private static GameObject CloneTemplate(Transform parent, GameObject template, string name, Vector3 pos, Material mat, float facing)
     {
         var clone = Object.Instantiate(template, parent);
         clone.name = name;
@@ -322,11 +335,14 @@ public static class WarSceneSetup
 
         var oldNpc = clone.GetComponent<NPCSample>();
         if (oldNpc != null) Object.DestroyImmediate(oldNpc);
-        foreach (var rend in clone.GetComponentsInChildren<Renderer>())
+
+        // Assign the per-class sharedMaterial. All NPCs of the same (faction, class)
+        // share the same Material asset reference → GPU Instancing collapses them
+        // into a single draw call per (mesh, material) combination.
+        if (mat != null)
         {
-            var mat = new Material(rend.sharedMaterial);
-            mat.color = tint;
-            rend.sharedMaterial = mat;
+            foreach (var rend in clone.GetComponentsInChildren<Renderer>())
+                rend.sharedMaterial = mat;
         }
         return clone;
     }
@@ -349,22 +365,22 @@ public static class WarSceneSetup
     }
 
     private static void SpawnNpc<TRunner>(
-        Transform parent, GameObject template, string name, Vector3 pos, Color tint,
+        Transform parent, GameObject template, string name, Vector3 pos, Material mat,
         Faction faction, LayerMask sensorLayer,
         float walkSpeed, float attackRange, float sensorRadius, float maxHp, float dmg, float facing)
         where TRunner : BaseNPCRunner
     {
-        var go = CloneTemplate(parent, template, name, pos, tint, facing);
+        var go = CloneTemplate(parent, template, name, pos, mat, facing);
         var runner = go.AddComponent<TRunner>();
         ApplyBaseStats(runner, faction, sensorLayer, walkSpeed, attackRange, sensorRadius, maxHp, dmg, facing);
     }
 
-    private static void SpawnArcher(Transform parent, GameObject template, string name, Vector3 pos, Color tint,
+    private static void SpawnArcher(Transform parent, GameObject template, string name, Vector3 pos, Material mat,
         Faction faction, LayerMask sensorLayer,
         float walkSpeed, float attackRange, float retreatRange, float shootCooldown,
         float sensorRadius, float maxHp, float dmg, float facing)
     {
-        var go = CloneTemplate(parent, template, name, pos, tint, facing);
+        var go = CloneTemplate(parent, template, name, pos, mat, facing);
         var runner = go.AddComponent<ArcherRunner>();
         ApplyBaseStats(runner, faction, sensorLayer, walkSpeed, attackRange, sensorRadius, maxHp, dmg, facing);
         var so = new SerializedObject(runner);
@@ -373,12 +389,12 @@ public static class WarSceneSetup
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 
-    private static void SpawnHealer(Transform parent, GameObject template, string name, Vector3 pos, Color tint,
+    private static void SpawnHealer(Transform parent, GameObject template, string name, Vector3 pos, Material mat,
         Faction faction, LayerMask sensorLayer,
         float walkSpeed, float healRange, float retreatRange, float healCooldown,
         float sensorRadius, float maxHp, float healPower, float facing)
     {
-        var go = CloneTemplate(parent, template, name, pos, tint, facing);
+        var go = CloneTemplate(parent, template, name, pos, mat, facing);
         var runner = go.AddComponent<HealerRunner>();
         // healRange is stored in _attackRange (heal range = "attack" range), healPower in _attackDamage.
         ApplyBaseStats(runner, faction, sensorLayer, walkSpeed, healRange, sensorRadius, maxHp, healPower, facing);

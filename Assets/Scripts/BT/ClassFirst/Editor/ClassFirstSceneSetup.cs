@@ -19,6 +19,9 @@ public static class ClassFirstSceneSetup
 {
     private const string ROOT_NAME = "ClassFirst_Demo";
     private const string SOURCE_ENEMY_PATH = "Enemy"; // root-level object in SampleScene
+    // Note: 3v3 demo uses `new Material()` per-NPC for simplicity. At 6 NPCs the
+    // perf cost of unique material instances is negligible. The 10000-NPC war
+    // demo (WarSceneSetup) uses the proper sharedMaterial-per-tint pattern.
 
     [MenuItem("Tools/BT ClassFirst/Setup Demo Scene")]
     public static void SetupDemoScene()
@@ -196,7 +199,6 @@ public static class ClassFirstSceneSetup
         var rend = go.GetComponent<Renderer>();
         if (rend != null)
         {
-            // sharedMaterial mutation would leak; create a per-instance material.
             var mat = new Material(rend.sharedMaterial);
             mat.color = new Color(0.3f, 0.3f, 0.32f);
             rend.sharedMaterial = mat;
@@ -242,6 +244,7 @@ public static class ClassFirstSceneSetup
             ApplyArcherStats(archer, archerRetreat, archerCooldown);
 
         // Tint all renderers on this instance to differentiate factions.
+        // (Per-NPC Material clone — fine at 3v3 scale; see notes at top of file.)
         foreach (var rend in clone.GetComponentsInChildren<Renderer>())
         {
             var mat = new Material(rend.sharedMaterial);

@@ -115,3 +115,7 @@ InitTestScene*.unity*
 BehaviorTree.Core/bin/
 BehaviorTree.Core/obj/
 
+# Runtime perf dumps (written by PerfDump / PerfDumpDetailed every 1s during PlayMode)
+/perf-dump.json
+/perf-dump-detail.json
+

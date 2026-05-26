@@ -19,6 +19,8 @@ public static class StateStyleSceneSetup
     private const string SOURCE_ENEMY_PATH = "Enemy";
     private const string SOURCE_SCENE_PATH = "Assets/Scenes/SampleScene.unity";
     private const string TARGET_SCENE_PATH = "Assets/Scenes/SampleScene_StateStyle.unity";
+    // Note: 3v3 demo uses `new Material()` per-NPC for simplicity. At 6 NPCs the
+    // perf cost of unique material instances is negligible.
 
     [MenuItem("Tools/BT StateStyle/Create State Style Scene")]
     public static void CreateStateStyleScene()
