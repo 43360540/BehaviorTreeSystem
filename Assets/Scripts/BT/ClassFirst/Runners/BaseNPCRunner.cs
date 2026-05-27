@@ -46,7 +46,9 @@ namespace BehaviorTree.ClassFirst
         // Exposed for SenseAlly / debug tools.
         public float HpRatio => _ctx?.HpRatio ?? 0f;
 
-        public void TakeDamage(float damage, IDamageable source)
+        // Virtual so duel runners can hook in "damage = perception update" —
+        // taking a hit locates the attacker even without LOS.
+        public virtual void TakeDamage(float damage, IDamageable source)
         {
             if (!IsAlive) return;
             _ctx.Hp = Mathf.Max(0f, _ctx.Hp - damage);
@@ -93,7 +95,14 @@ namespace BehaviorTree.ClassFirst
                 maxHp: _maxHp,
                 attackDamage: _attackDamage,
                 enemyDirection: _enemyDirection,
-                patrolPoints: _patrolPoints);
+                patrolPoints: _patrolPoints,
+                // BTContext defaults to 16, which is too small for any scene
+                // with NPCs + arena obstacles — Physics.OverlapSphereNonAlloc
+                // can fill the buffer with static walls/pillars and Sense will
+                // silently miss the actual enemy (observed in the duel demo:
+                // Marksman took 6 s to acquire Duelist that was already 41 m
+                // inside its 45 m sensor radius). 64 leaves headroom.
+                overlapBufferSize: 64);
 
             SetContext(_ctx);
             long ctxBuildTicks = swTotal.ElapsedTicks;

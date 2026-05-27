@@ -598,3 +598,232 @@ framework 本身大概到 **5000 NPC 才會變成主要 CPU 瓶頸**。對「中
 Part 3 跟 ASSESSMENT 中估算「BT 在 5000 NPC 變主要 CPU 瓶頸」**過於保守**。實測 10000 NPC scripts 才 39 ms（佔 frame 18%），更精準的估算是 **BT 在 ~8000 NPC 變主要 CPU 瓶頸**。
 
 framework 性能評分 **9/10 維持不變**，但「適用上限」可以再上修一節。
+
+---
+
+# Part 12 — Duel demo: human-like 1v1 AI
+
+> Phase 跨越三個版本：V1 純 BT 戰術、V2 cone-FOV + LOS perception、V3 hearing + damage reaction + spatial-melee。
+>
+> 這部分對 framework 的 stress 跟 war demo 完全不同：war demo 看「per-NPC cost × N 隻」，duel demo 看「表達能力 — BT 能不能寫出像人一樣的 AI」。
+
+## 12.1 設計演進
+
+| 版本 | 行為模型 | Framework stress |
+|---|---|---|
+| V1 | OverlapSphere 全知感知 + HP-tier branches + flank + reload | BT 很順 — 選 selector + when 預先包好的決策樹 |
+| V2 | Cone FOV + LOS raycast + LastKnownPos 記憶 + cover-to-cover advance + investigate | BT 開始喘 — 「失去視覺後追上次位置」需要 perception state，框架的 sealed BTContext 強制我把 state 放 Runner，BT actions 透過 IPerceptionHolder ctor 注入 |
+| V3 | Hearing (NoiseBus pub-sub) + damage reaction (TakeDamage 鎖位置) + spatial-only melee impact (WarriorCharge 重做) + proximity peripheral vision | BT 本身仍然簡潔，但**動作 (Action) 端**的 contract 變得豐富 — snapshot target、impact time、emit noise 都不是 BT 表達的事，是 Action 內部物理/感官邏輯 |
+
+## 12.2 痛點 1 — Sealed BTContext 的「state in Runner + interface」pattern
+
+`BTContext` 是 `sealed`，不能繼承擴充。每次想加 duel 專用 state（LastKnownPos / Ammo / CurrentCover）就要：
+
+1. 加 field 到 Runner
+2. 寫 interface 暴露存取（`IPerceptionHolder`, `IRangedAmmoController`, `ICoverHolder`, `INoiseListener`）
+3. Actions 用 ctor inject Runner（e.g. `new PredictedShoot(this, ...)`）
+
+優點：強迫每個 Action 顯式宣告它需要什麼類型的 Runner（contract 明確）。缺點：CreateTree() 裡到處看到 `this`，MarksmanRunner.CreateTree 裡 `this` 出現 11 次。讀起來像「BT 知道自己是誰」，違反「BT 是純邏輯結構，不該綁實例」的直覺。但這是 sealed BTContext 的必然 trade-off。
+
+**框架評估點**：BTContext 不 sealed + 提供「derived context」pattern 會更乾淨。但 sealed 也是有意設計（避免 plug-in 出怪味），所以這個取捨值得記錄而不是改框架。
+
+## 12.3 痛點 2 — Memory Sequence 跟 NavMeshAgent baseOffset 撞車
+
+V2 第一次跑時兩個 NPC 卡死在第一個 cover 24 秒。Self-review 沒找出，play test 才暴露。Debug 過程：
+
+1. Dumper 顯示位置數據：NPC 到了 (-8, -11.3) 後就完全沒動
+2. 懷疑 `SequenceComposite` 是 memory sequence — _index 不會自動 reset
+3. 讀框架 source（NodeBase.Tick）發現 `OnReset` 會在 Status != Running 時觸發，重置 _index ✓
+4. 真正 bug：`AdvanceToNextCover.Tick` 用 `Vector3.Distance(self.position, _destSnapshot)` — 3D 距離
+5. NavMeshAgent.baseOffset = 1m，cover GameObject 在 y=0，**y 差距永遠 1m > arriveTolerance 0.8m**
+6. → Tick 永遠回 Running → Sequence 卡在 AdvanceToNextCover → 沒進 PeekAndScan → 沒重抽 cover → 死循環
+
+**Framework 沒辦法保護你免於這種 NavMeshAgent 整合錯誤**，但它也沒給你錯的訊號。BT debug 工具有限 — `BTDebugger.DrawTree()` 印出狀態但看不出「卡在哪個 Action 的 Tick 返回 Running」。
+
+教訓：**任何「arrive distance」檢查必須 XZ-only**。已 fix `AdvanceToNextCover`, `MoveToCover`, `MoveToFlankPosition` 3 個檔。
+
+## 12.4 框架在「Spatial Reasoning」的天花板
+
+> Marksman 想在 cover 後找個位置，要求：(1) 跟 LastKnown 有 LOS (2) 自己被掩體保護 (3) 在 attackRange 內
+
+這在 BT 寫不出來。BT 是 reactive decision tree，沒有「**enumerate 候選位置 + evaluate 多條件 + 選最優**」的天然原語。我手寫了 `AdvanceToNextCover.PickNextCover` — 60 行的搜尋 + 評分函式，這部分基本上是「**寫了個 mini-utility-AI 塞進 BT Action 裡**」。
+
+如果要更深的戰術（cover-to-cover with LOS guarantee, flanking via NavMesh path scoring, ambush position selection），BT 表達會變得醜。**HTN / GOAP / Utility AI 系統會更自然**。
+
+這對框架評估是中性發現：BT framework **沒設計成解這類問題**，這是 BT paradigm 的限制，不是這個 framework 的弱點。
+
+## 12.5 框架在「reactive perception」的勝場
+
+Cone FOV + LOS + LastKnownPos 跟 BT 配合得超乎預期好。每 frame `ConeVisionSense` 寫 `ctx.Target`（或清掉），所有 `.When((ctx, _) => ctx.HasTarget && ...)` 預先寫好的 branch **自動正確反應**：
+
+- Target 進入視野 → engage branch 自動 match
+- Target 躲掩體（vision 清掉 ctx.Target）→ engage branch fail → ADVANCE branch 接手
+- Target 又出現 → engage 再 match
+
+完全不用寫「mode 切換」邏輯。Reactive selector + per-frame 感知 = 自然湧現的「peek and fight」行為。這部分 **BT framework 表現很好**。
+
+## 12.6 V3 hearing + damage reaction 的 framework 觀察
+
+`NoiseBus` 跟 BT 框架**完全解耦** — 走 pub-sub，emit 在 Action 內（PredictedShoot），listener 在 Runner（MonoBehaviour lifecycle）。BT 不參與。
+
+`TakeDamage` override 也一樣 — Runner 直接更新自己的 `_perception.LastKnownPos`，下一個 BT tick `.When` 自動反應。
+
+**這暴露了一個值得記錄的 framework 限制**：BT 不會通知 listener「ctx 中的某個 field 變了」。所有反應都依賴 next-tick re-evaluation。大部分情況下沒問題（60 fps tick 夠快），但若 framework 提供 "blackboard observer" pattern 會讓「對外部事件即時反應」的場景表達更乾淨。
+
+## 12.7 BT 框架對「物理動作 commitment」的中性
+
+WarriorCharge 重做（V3）— snapshot target + impact time + spatial range 結算。BT 對這個改動**零意見** — Action 自己決定何時應用傷害，BT 只負責「選哪個 Action、什麼時候 Abort」。框架沒對 Action 的內部時序設限，這個自由度**讓「物理上 committed 的動作」很容易表達**。
+
+但也注意：BT 的「reactive selector preempt」會 abort Action（呼叫 Stop with Failure status）。如果 Action 想表達「真的不可中斷」（hard commit），目前沒有「uninterruptible decorator」原語可用。我的 WarriorCharge 用「impact 在 Tick 中段固定時間發生」的 workaround — preempt 太早就沒傷害，preempt 太晚已經結算了。**半 commit 是目前 framework 能給的最強保證**。
+
+## 12.8 開發節奏感
+
+| 階段 | 估時 | 實際 |
+|---|---|---|
+| V1 設計 + 寫 + review | 1.5 天 | ~3 hr |
+| V1 self-review + fix（4 bugs） | 1 hr | 1 hr |
+| V2 設計討論 | 1 hr | 30 min |
+| V2 寫（perception + actions + BT 重組） | 2 天 | ~4 hr |
+| V2 self-review | 1 hr | 1 hr |
+| V2 test + Y-bug debug | 30 min | 1.5 hr |
+| V3 設計討論 | 30 min | 30 min |
+| V3 實作 4 個 feature | 1.5 hr | ~1.5 hr |
+
+整體開發**比預估快 50%**。最大時間殺手是 V2 test phase 的 Y-bug — 1 行 distance check 寫 3D vs XZ 的差別卡了 1.5 hr。**這類整合 bug（framework + Unity NavMesh）是寫 BT 框架最容易踩、最不容易自我 review 出來的雷**。
+
+## 12.9 對 ASSESSMENT 的反饋
+
+| 維度 | V1-V3 結果對原評分的影響 |
+|---|---|
+| API 設計 | 維持 6 — 沒新發現，sealed BTContext 限制已記錄 |
+| 可學習性 | 維持 4 — 沒文件、debug 仍困難（Y-bug 沒辦法 self-review 找出） |
+| 可擴充性 | **8 → 9** — 4 個新 BT actions / 2 個 condition / 4 個 interface 完全沒動 framework 源碼，擴充點清楚 |
+| 可測試性 | 維持 8 |
+| 可維護性 | 維持 6 |
+| 執行性能 | 維持 9 — duel demo 只有 2 NPC 不適合測 perf |
+| Unity 整合 | **5 → 4** — Y-bug 暴露「framework 不對 NavMeshAgent baseOffset 給警告」 |
+| 文件 / 範例 | 維持 2 |
+| 錯誤處理 / Debug | 維持 4 — Y-bug 那種 "Tick 永遠回 Running" 的卡死沒任何 framework 訊號 |
+
+整體仍然是「**core engine 紮實、整合工具缺貨**」的型態。Duel demo 沒改變這個判斷，反而加強了它。
+
+---
+
+# Part 13 — 全程開發體驗總結
+
+> 從 200 NPC sample 到 10000 NPC war demo 再到 1v1 human-like duel — 三個截然不同的 stress 模式，從不同角度評過同一套 BT framework。把所有觀察凝結在這一節。
+
+## 13.1 三條測試線交叉驗證的結果
+
+| 維度 | 200 NPC sample | 10000 NPC war | 1v1 duel |
+|---|---|---|---|
+| 主要 stress | 框架 API 設計、Builder 直覺度 | per-NPC tick scaling、render pipeline | BT 表達力、reactive selector 行為、整合細節 |
+| 框架痛點 | `Func<TContext, bool>` overload 缺失 | OverlapBuffer 默認 16 太小 | Memory Sequence + NavMeshAgent baseOffset Y-bug、reactive selector 在 threshold 振盪 |
+| 框架勝場 | Fluent builder 縮排即結構 | per-NPC 2-8 μs 線性 scaling、zero framework GC | Reactive perception + .When 預編組合自然湧現 peek-and-fight |
+
+**最值得記錄的 cross-cut finding**：framework **本身的 core engineering 一致地紮實** — 三個模式都沒踩到框架邏輯本身的 bug，所有 bug 全在「**framework + Unity 整合層**」或「**BT paradigm 的固有限制**」。
+
+## 13.2 整個過程的 Bug Taxonomy
+
+把整個過程踩過的雷分類：
+
+### A. Framework API 缺貨 — 寫起來像 friction，但能繞
+
+- `Func<TContext, bool>` overload 缺失 → `.When(ctx => ...)` 被解析成 `Func<float, bool>` 錯誤訊息誤導
+- `Sense` 沒提供 LOS 變體 → 自己寫 ConeVisionSense
+- Sealed BTContext → state 強制塞 Runner + interface
+- 沒有「uninterruptible action」decorator → impact-time-in-Tick workaround
+- 沒有「blackboard observer」pattern → 對外部事件即時反應靠 next-tick re-eval
+
+### B. Framework Integration 雷 — Unity-side 細節，framework 沒給警告
+
+- NavMeshAgent baseOffset = 1m 跟 Vector3.Distance arrive-check 撞車（V2 Y-bug，1.5 hr debug）
+- NavMeshObstacle.carving 跟 NavMesh.SamplePosition 互動細節（cover 在牆內側偶爾 unreachable）
+- Animation event 跟 BT Tick 同步（IsAttacking flag 是 anim event 翻轉，BT 要等）
+- OverlapSphereNonAlloc buffer size 默認太小（war demo 6 秒延遲偵測、duel 兩次 stuck）
+- Raycast eye height 1.2 跟 capsule top 2.08 的 0.2m 差距讓 ranged 命中失敗（無 framework 端能 warn）
+
+### C. BT Paradigm 固有限制 — 不是 framework 的鍋
+
+- 多步戰術計畫（Decoy、fake retreat、long-term ambush）BT 表達不出來
+- Spatial reasoning（找有 LOS 的位置）要在 Action 內手寫 mini-utility-AI
+- **Threshold 振盪 deadlock**：DANGER_KITE (dist<8) 跟 FORCED_RELOAD (ammo=0) 在 retreat range 邊界以 ~1 Hz 振盪 48 秒不解（duel 最後完整對局觀察）。本質上 BT 沒有 stable-equilibrium 概念，兩個 valid branch 各推一邊，threshold 來回切
+
+### D. 開發 workflow 雷 — 跟 framework 無關
+
+- Sandbox file mount cache 有時跟 Windows 真實檔案延遲幾分鐘 → 用 Rider terminal 直接看 Windows 端可避免
+- Editor menu 對話框 modal block menu-cli call timeout
+- `.git/config` 跟 `.git/index` 被 sandbox 寫入時偶爾損毀
+
+## 13.3 Reactive Selector 是雙面刃 — 整個過程最深的觀察
+
+`SelectorComposite` 是 reactive — 每 tick 從 top 重新評估，preempt running children。
+
+**正面**（在 V2 perception 那段最明顯）：
+- 不用寫「mode 切換」邏輯。Sensor 寫 ctx.Target，當前 branch 自動切到正確的
+- Cover 出現 → 進 cover；視線恢復 → 開火；HP 掉穿 threshold → 進 defensive
+- 「emergent」behavior 真的 emerge 出來，這在 state machine 範式做不到
+
+**負面**（在 V3 那段最明顯）：
+- 任何 action 被 preempt → Stop with Failure → 半完成狀態
+- WarriorCharge 揮砍動畫中段被 preempt → 沒結算傷害（V3 修：impact 移到 Tick）
+- PredictedShoot 開火動畫中段被 preempt → 沒消耗 ammo 沒打中（V3 修：impact-in-Tick）
+- DANGER_KITE / FORCED_RELOAD threshold 振盪 → 兩個 sequence 都從未跑完
+
+**整段教訓**：BT action 要寫對，「**commit moment**」必須在 Tick 內顯式發生，不能仰賴 Stop。這是 reactive selector 的不可協商代價。
+
+## 13.4 「自製 Action 不動 framework」是真的 — 5 個 demo 0 行框架原碼修改
+
+整個過程做的：
+- 3v3 ClassFirst sample
+- 3v3 StateStyle sample  
+- 5-class 10000-NPC war demo（perf stress）
+- 1v1 duel demo V1 (intermediate tactics)
+- 1v1 duel demo V2 (cone + LOS)
+- 1v1 duel demo V3 (hearing + damage reaction + spatial melee + proximity)
+
+合計約 **42 個新 .cs 檔** + 10 個 tint .mat assets + 2 個 perf dumper + 1 個 duel HUD + 1 個 state dumper。
+
+**Framework 源碼修改：0 行**。所有東西塞進 Class-First 開放擴充點。這跟原本 ASSESSMENT 給 8/10 的「可擴充性」一致，Duel V3 之後我升到 9。
+
+唯一動到的「框架邊緣」程式：
+- `BaseNPCRunner.TakeDamage` 改成 `virtual`（讓 duel 子類能 hook perception update）
+- `BaseNPCRunner.Awake` BTContext 建構時 overlapBufferSize 從默認 16 改 64
+
+這兩個是 BaseNPCRunner 自己的 user-side code，不算 framework core。
+
+## 13.5 開發效率回饋
+
+跑 3 條測試線（war + duel V1/V2/V3）的工時感受：
+
+| 場景 | 預估 | 實際 | 偏差 |
+|---|---|---|---|
+| 第一次設計（沒讀 framework 就寫）| 1 天 | 0.5 天 | 框架太直覺，沒卡住 |
+| 第二次設計（Duel V1）| 1.5 天 | 3 hr | builder 寫順了 |
+| 第三次（Duel V2 perception）| 2 天 | 4 hr | 模式自然對應，但 Y-bug 卡 1.5 hr |
+| 第四次（Duel V3 4 features）| 1.5 hr | 1.5 hr | 準 |
+| 修 V3 PredictedShoot commit | 30 min | 1.5 hr | impact-in-Tick 邏輯反覆校 |
+
+**整體開發效率比預估快 ~50%**。框架的 fluent builder 跟 reactive selector 一旦熟悉就非常順手；最大 time sink 是整合 Unity 細節（NavMeshAgent baseOffset、capsule height、animation event 時序）這類**框架沒辦法保護你的地方**。
+
+## 13.6 重新校準 ASSESSMENT 分數
+
+| 維度 | 原 | 走完三條線後 | Note |
+|---|---|---|---|
+| API 設計 | 6 | 6 | 沒改變判斷 |
+| 可學習性 | 4 | 4 | 文件還是 0，duel 跌過的雷沒人會 review 出來 |
+| 可擴充性 | 8 | **9** | 5 個 demo 零框架修改驗證 |
+| 可測試性 | 8 | 8 | 沒寫 unit test 但證明設計支援 |
+| 可維護性 | 6 | 6 | 沒改變 |
+| 執行性能 | 9 | **7** | war demo 證明 per-NPC 線性 scaling 但 38% frame 是 BT 是事實，不能裝 9 |
+| Unity 整合 | 5 | **3** | Y-bug、capsule-top、NavMeshAgent baseOffset 三個沒任何 framework warn |
+| 文件 / 範例 | 2 | 2 | 還是沒文件 |
+| 錯誤處理 / Debug | 4 | 3 | 「Tick 永遠回 Running」「BT preempt 取消 action」都沒 framework 工具能診斷 |
+
+**框架性質的判斷**：core engine 紮實 → **更紮實確認**。整合層缺貨 → **更明顯**。文件缺貨 → 依舊。**這個 framework 適合作者自己用、適合熟手用，不適合新手沒嚮導就上手**。
+
+## 13.7 整段最後的一句話總結
+
+> 這個 BT framework 像一支**沒有保險的好刀**：手感極佳，cut 得乾淨利落；但你割到自己時它不會發聲、不會閃光、不會記錄是哪一刀傷到的。**作者把所有時間花在刀刃，沒花時間在刀鞘上**。
+
+

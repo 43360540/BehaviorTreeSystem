@@ -119,3 +119,7 @@ BehaviorTree.Core/obj/
 /perf-dump.json
 /perf-dump-detail.json
 
+# Duel demo observation outputs (DuelStateDumper)
+/duel-state.jsonl
+/duel-snaps/
+

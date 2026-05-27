@@ -39,12 +39,14 @@ public static class WarSceneSetup
         return m;
     }
 
-    // Per-team composition (sum = 5000). Ratios preserved from 100-per-team setup.
-    private const int WARRIORS = 2000;
-    private const int SPEARMEN = 1250;
-    private const int ARCHERS  = 1000;
-    private const int KNIGHTS  =  500;
-    private const int HEALERS  =  250;
+    // Per-team composition (sum = 100). Same ratios as the 5000-team stress test
+    // (40/25/20/10/5). Map size + camera + NavMesh stay sized for the big battle
+    // so we can scale back up by just bumping these numbers + COLS_PER_ROW.
+    private const int WARRIORS = 40;
+    private const int SPEARMEN = 25;
+    private const int ARCHERS  = 20;
+    private const int KNIGHTS  = 10;
+    private const int HEALERS  =  5;
 
     [MenuItem("Tools/BT War/Create War Scene")]
     public static void CreateWarScene()
@@ -227,8 +229,8 @@ public static class WarSceneSetup
         // rank grows as we move back.
         int rank = 0;
 
-        // 100-wide columns at 5000-per-team scale.
-        const int COLS_PER_ROW = 100;
+        // 10-wide columns at 100-per-team scale (formation ~16m wide / type).
+        const int COLS_PER_ROW = 10;
 
         // ---- Warriors (20 ranks × 100) front line ----
         for (int i = 0; i < WARRIORS; i++)
