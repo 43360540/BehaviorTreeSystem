@@ -5,8 +5,8 @@ namespace BehaviorTree
 {
     public class CompositeBuilder<TContext> : IMultiChildren<CompositeBuilder<TContext>, TContext>
     {
-        private readonly List<INode<TContext>> _children = new();
-        private string? _name;
+        private readonly List<INode<TContext>> _children = [];
+        private readonly string? _name;
 
         public CompositeBuilder(string? name) => _name = name;
 
@@ -24,7 +24,7 @@ namespace BehaviorTree
             if (_children.Count <= 0)
                 throw new InvalidOperationException("Composite must have at least ONE child.");
 
-            return factory(_children.ToArray(), _name);
+            return factory([.. _children], _name);
         }
     }
 }

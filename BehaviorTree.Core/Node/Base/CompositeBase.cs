@@ -19,9 +19,7 @@ namespace BehaviorTree
                 throw new ArgumentException("Children cannot contain null.", nameof(children));
 
             Children = (INode<TContext>[])children.Clone();
-            _readOnlyChildren = children
-                .OfType<IReadOnlyNode>()
-                .ToArray();
+            _readOnlyChildren = [.. children.OfType<IReadOnlyNode>()];
         }
 
         protected override void OnTimeElapse(float dt)

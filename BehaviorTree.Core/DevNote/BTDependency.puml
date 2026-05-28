@@ -1,0 +1,296 @@
+@startuml BTDependency
+' =============================================================
+'  Behavior Tree System - Dependency Diagram
+'  Scope: BT only (Core / StateStyle / MonoBTRunner)
+'  Generated from source under BehaviorTree.Core/ and Assets/Scripts/BT/
+' =============================================================
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+skinparam package {
+    BackgroundColor<<core>>       #E3F2FD
+    BorderColor<<core>>           #1565C0
+    BackgroundColor<<statestyle>> #E8F5E9
+    BorderColor<<statestyle>>     #2E7D32
+    BackgroundColor<<mono>>       #FFF3E0
+    BorderColor<<mono>>           #E65100
+}
+
+' =============================================================
+' External (Unity)
+' =============================================================
+class "MonoBehaviour" as MonoBehaviour <<external>> #DDDDDD
+
+' =============================================================
+' Package: BehaviorTree.Core
+' =============================================================
+package "BehaviorTree.Core" <<core>> {
+
+    package "Interfaces" <<core>> {
+        interface "INode<TContext>" as INode {
+            + TimeElapse(dt: float)
+            + Tick(ctx: TContext): NodeStatus
+            + Abort(ctx: TContext)
+        }
+        interface "IGuard<TContext>" as IGuard {
+            + CanEnter(ctx, dt): bool
+        }
+        interface "ICondition<TContext>" as ICondition {
+            + Evaluate(ctx, dt): bool
+        }
+        interface "IReadOnlyNode" as IReadOnlyNode {
+            + Name: string
+            + Status: NodeStatus
+            + SubNodes: IReadOnlyList<IReadOnlyNode>
+        }
+        enum NodeStatus {
+            None
+            Success
+            Running
+            Failure
+        }
+    }
+
+    package "Base" <<core>> {
+        abstract class "NodeBase<TContext>" as NodeBase {
+            # Name: string
+            # DisplayStatus: NodeStatus
+            # DeltaTime: float?
+            + TimeElapse(dt)
+            + Tick(ctx): NodeStatus
+            + Abort(ctx)
+            # {abstract} OnTick(ctx, dt)
+            # OnStart(ctx)
+            # OnStop(ctx, status)
+            # OnAbort(ctx)
+            # OnReset()
+        }
+        abstract class "LeafBase<TContext>" as LeafBase
+        abstract class "CompositeBase<TContext>" as CompositeBase {
+            # Children: INode<TContext>[]
+        }
+        abstract class "DecoratorBase<TContext>" as DecoratorBase {
+            # Child: INode<TContext>
+        }
+    }
+
+    package "Leaves" <<core>> {
+        class "ActionLeaf<TContext>" as ActionLeaf {
+            - _action: ActionBase<TContext>
+        }
+        class "ConditionLeaf<TContext>" as ConditionLeaf {
+            - _condition: ICondition<TContext>
+            - _expected: bool
+        }
+    }
+
+    package "Composites" <<core>> {
+        class "SequenceComposite<TContext>" as SequenceComposite
+        class "SelectorComposite<TContext>" as SelectorComposite
+        class "ParallelComposite<TContext>" as ParallelComposite
+        class "MemorialSelectorComposite<TContext>" as MemorialSelectorComposite
+    }
+
+    package "Decorators" <<core>> {
+        class "InverterDecorator<TContext>" as InverterDecorator
+        class "GuardDecorator<TContext>" as GuardDecorator {
+            - _condition: ICondition<TContext>
+        }
+        class "RepeaterDecorator<TContext>" as RepeaterDecorator
+        class "TimeLimitDecorator<TContext>" as TimeLimitDecorator
+        class "CoolDownDecorator<TContext>" as CoolDownDecorator
+        class "ThrottleDecorator<TContext>" as ThrottleDecorator
+        class "ForceDecorator<TContext>" as ForceDecorator
+    }
+
+    package "Action" <<core>> {
+        abstract class "ActionBase<TContext>" as ActionBase {
+            + Start(ctx)
+            + {abstract} Tick(ctx, dt): NodeStatus
+            + Stop(ctx, status)
+            + Abort(ctx)
+            + Reset()
+        }
+        class "QuickAction<TContext>" as QuickAction {
+            + OnStart: Action<TContext>?
+            + OnTick: Func<TContext,float,NodeStatus>
+            + OnStop: Action<TContext,NodeStatus>?
+            + OnAbort: Action<TContext>?
+            + OnReset: Action?
+        }
+        class "QuickCondition<TContext>" as QuickCondition {
+            - _predicate: Func<TContext,float,bool>
+        }
+    }
+
+    package "Builder" <<core>> {
+        interface "ISingleChild<TContext>" as ISingleChild {
+            + Set(node)
+        }
+        interface "IMultiChildren<TSelf,TContext>" as IMultiChildren {
+            + Add(node): TSelf
+        }
+        class "RootBuilder<TContext>" as RootBuilder
+        class "CompositeBuilder<TContext>" as CompositeBuilder
+        class "DecoratorBuilder<TLogic,TContext>" as DecoratorBuilder2
+        class "DecoratorBuilder<TContext>" as DecoratorBuilder1
+        class "BTBuilder<TContext>" as BTBuilder <<static>>
+    }
+
+    package "Runtime" <<core>> {
+        class "BTRunner<TContext>" as BTRunner {
+            + Context: TContext
+            + Tree: INode<TContext>
+            + Tick(duration: float)
+            + Abort()
+        }
+    }
+}
+
+' =============================================================
+' Package: BehaviorTree.StateStyle
+' =============================================================
+package "BehaviorTree.StateStyle" <<statestyle>> {
+    class StateDefAttribute <<attribute>> {
+        + StateName: string
+        + Lifecycle: Phase
+    }
+    enum Phase {
+        Start
+        Tick
+        Stop
+        Abort
+        Reset
+    }
+    abstract class "StateStyleBase<TSelf,TStates>" as StateStyleBase {
+        - _states: TStates[]
+        - _actionLeaves: Dictionary<TStates, INode<TSelf>>
+        + Awake()
+        + Get(state): INode<TSelf>
+        - Scan()
+    }
+    class StateStyleMethodInfo <<record>> {
+        + Method: MethodInfo
+        + Attribute: StateDefAttribute
+    }
+}
+
+' =============================================================
+' Package: MonoBTRunner (Unity layer)
+' =============================================================
+package "MonoBTRunner (Unity)" <<mono>> {
+    abstract class "MonoBTRunner<TContext>" as MonoBTRunner {
+        - _debugMode: bool
+        - _debugDuration: float
+        - _tickRate: Rate
+        - _context: TContext
+        - _bTRunner: BTRunner<TContext>
+        + Tree: INode<TContext>
+        + {abstract} CreateTree(): INode<TContext>
+        # SetContext(ctx)
+    }
+    enum Rate {
+        Update
+        FixedUpdate
+    }
+}
+
+' =============================================================
+' INHERITANCE
+' =============================================================
+NodeBase       <|-- LeafBase
+NodeBase       <|-- CompositeBase
+NodeBase       <|-- DecoratorBase
+
+LeafBase       <|-- ActionLeaf
+LeafBase       <|-- ConditionLeaf
+
+CompositeBase  <|-- SequenceComposite
+CompositeBase  <|-- SelectorComposite
+CompositeBase  <|-- ParallelComposite
+CompositeBase  <|-- MemorialSelectorComposite
+
+DecoratorBase  <|-- InverterDecorator
+DecoratorBase  <|-- GuardDecorator
+DecoratorBase  <|-- RepeaterDecorator
+DecoratorBase  <|-- TimeLimitDecorator
+DecoratorBase  <|-- CoolDownDecorator
+DecoratorBase  <|-- ThrottleDecorator
+DecoratorBase  <|-- ForceDecorator
+
+ActionBase     <|-- QuickAction
+
+MonoBehaviour  <|-- MonoBTRunner
+MonoBTRunner   <|-- StateStyleBase
+
+' =============================================================
+' INTERFACE IMPLEMENTATION
+' =============================================================
+NodeBase             ..|> INode
+LeafBase             ..|> IReadOnlyNode
+CompositeBase        ..|> IReadOnlyNode
+DecoratorBase        ..|> IReadOnlyNode
+
+GuardDecorator       ..|> IGuard
+CoolDownDecorator    ..|> IGuard
+ThrottleDecorator    ..|> IGuard
+
+QuickCondition       ..|> ICondition
+
+RootBuilder          ..|> ISingleChild
+DecoratorBuilder1    ..|> ISingleChild
+DecoratorBuilder2    ..|> ISingleChild
+CompositeBuilder     ..|> IMultiChildren
+
+' =============================================================
+' COMPOSITION / AGGREGATION
+' =============================================================
+ActionLeaf        o--> ActionBase        : _action
+ConditionLeaf     o--> ICondition        : _condition
+GuardDecorator    o--> ICondition        : _condition
+
+CompositeBase     o--> "*" INode         : Children
+DecoratorBase     o--> INode             : Child
+
+BTRunner          o--> INode             : Tree
+BTRunner          o--> "TContext"        INode : ctx
+
+MonoBTRunner      o--> BTRunner          : _bTRunner
+MonoBTRunner      --> Rate               : _tickRate
+
+StateStyleBase    o--> "Dictionary" ActionLeaf : _actionLeaves
+StateStyleBase    ..> QuickAction         : builds
+StateStyleBase    ..> StateDefAttribute   : reflects
+StateStyleBase    ..> StateStyleMethodInfo
+StateDefAttribute --> Phase               : Lifecycle
+
+' =============================================================
+' USAGE / DEPENDENCY
+' =============================================================
+SelectorComposite ..> IGuard             : runtime check
+GuardDecorator    ..> IGuard
+CoolDownDecorator ..> IGuard
+ThrottleDecorator ..> IGuard
+
+' Builders produce nodes
+RootBuilder       ..> INode
+CompositeBuilder  ..> CompositeBase
+DecoratorBuilder1 ..> DecoratorBase
+DecoratorBuilder2 ..> DecoratorBase
+BTBuilder         ..> RootBuilder
+
+' Leaf/decorator extension APIs consume builder interfaces
+ActionLeaf        ..> ISingleChild
+ActionLeaf        ..> IMultiChildren
+ConditionLeaf     ..> ISingleChild
+ConditionLeaf     ..> IMultiChildren
+
+' Status is returned by every tick path
+INode             ..> NodeStatus
+ActionBase        ..> NodeStatus
+NodeBase          ..> NodeStatus
+
+@enduml

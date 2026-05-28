@@ -75,3 +75,16 @@ namespace BehaviorTree.StateStyle
        - 1-2-1
        - 1-2-2
        ...
+
+
+public NodeStatus Tick(int[]? indices,...)
+{
+    foreach(var index in indices)
+    {
+        var result = Array[index].Tick(..., out indices);
+        if (result == Success && indices != null)
+            Tick(indices, out...)
+
+        return result;
+    }
+}

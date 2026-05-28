@@ -7,7 +7,7 @@ namespace BehaviorTree.StateStyle
     {
         public string StateName { get; }
         public Phase Lifecycle { get; }
-        
+
         public StateDefAttribute(string stateName, Phase lifecycle)
         {
             StateName = stateName;
