@@ -18,6 +18,8 @@ namespace BehaviorTree
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
+            Info = $"{_timer} / {_timeLimit}s";
+
             _timer += dt;
             if (_timer >= _timeLimit)
             {

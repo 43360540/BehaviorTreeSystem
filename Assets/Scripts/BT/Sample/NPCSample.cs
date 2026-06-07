@@ -154,7 +154,7 @@ public class NPCSample : StateStyleBase<NPCSample, NPCSample.State>
                         )
                     )
                 )
-                // Decitions
+                // Decisions
                 .Repeater(x => x
                     .Selector(x => x
                         .When(() => IsTargetInRange(3f), x => x.Set(Get(State.Attack)))

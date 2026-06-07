@@ -11,6 +11,8 @@ namespace BehaviorTree
             var childStatus = Child.Tick(ctx);
             if (childStatus == NodeStatus.Running)
                 return NodeStatus.Running;
+            Info = childStatus == NodeStatus.Success ?
+                $"{NodeStatus.Failure} ({NodeStatus.Success})" : $"{NodeStatus.Success} ({NodeStatus.Failure})";
             return childStatus == NodeStatus.Success ? NodeStatus.Failure : NodeStatus.Success;
         }
     }

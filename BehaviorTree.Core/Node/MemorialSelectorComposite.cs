@@ -15,17 +15,24 @@ namespace BehaviorTree
         {
             var prevStatus = Children[_activeIndex].Tick(ctx);
             if (prevStatus != NodeStatus.Failure)
-                return prevStatus;
+            {
+                Info = prevStatus.ToString();
 
+                return prevStatus;
+            }
             for (int i = _activeIndex + 1; i < Children.Length; i++)
             {
                 var status = Children[i].Tick(ctx);
                 if (status != NodeStatus.Failure)
                 {
+                    Info = status.ToString();
+
                     _activeIndex = i;
                     return status;
                 }
             }
+            Info = NodeStatus.Failure.ToString();
+
             return NodeStatus.Failure;
         }
 

@@ -13,6 +13,7 @@ namespace BehaviorTree
                 throw new ArgumentException("ForceDecorator only accepts Success or Failure.");
 
             _forced = forced;
+            Info = $"Always {forced}";
         }
 
         protected override NodeStatus OnTick(TContext ctx, float dt)

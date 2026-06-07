@@ -3,16 +3,14 @@ using System.Collections.Generic;
 
 namespace BehaviorTree
 {
-    public abstract class DecoratorBase<TContext> : NodeBase<TContext>, IReadOnlyNode
+    public abstract class DecoratorBase<TContext> : NodeBase<TContext>
     {
-        protected INode<TContext> Child { get; }
-
-        private readonly IReadOnlyNode[] _readOnlyChildren;
+        protected INode<TContext> Child => ChildNodes![0];
 
         public DecoratorBase(INode<TContext> child, string? name = null) : base(name)
         {
-            Child = child ?? throw new ArgumentNullException(nameof(child));
-            _readOnlyChildren = child is IReadOnlyNode r ? [r] : [];
+            if (child == null) throw new ArgumentNullException(nameof(child));
+            ChildNodes = [child];
         }
 
         protected override void OnTimeElapse(float dt)
@@ -25,10 +23,5 @@ namespace BehaviorTree
             base.OnAbort(ctx);
             Child.Abort(ctx);
         }
-
-        // IReadOnlyNode
-        string IReadOnlyNode.Name => Name;
-        NodeStatus IReadOnlyNode.Status => DisplayStatus;
-        IReadOnlyList<IReadOnlyNode> IReadOnlyNode.SubNodes => _readOnlyChildren;  
     }
 }

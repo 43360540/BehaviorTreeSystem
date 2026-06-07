@@ -25,9 +25,15 @@ namespace BehaviorTree
                 NodeStatus status = Children[_index].Tick(ctx);
 
                 if (status != NodeStatus.Success)
+                {
+                    Info = status.ToString();
+
                     return status;
+                }
                 _index++;
             }
+            Info = NodeStatus.Success.ToString();
+
             return NodeStatus.Success;
         }
 

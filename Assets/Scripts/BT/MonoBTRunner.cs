@@ -18,7 +18,7 @@ namespace BehaviorTree
 
         private BTRunner<TContext> _bTRunner;
         private IReadOnlyNode _rTree;
-        private float _debugTimer = 0f; 
+        private float _debugTimer = 0f;
 
         protected virtual void Awake()
         {
@@ -46,7 +46,7 @@ namespace BehaviorTree
         {
             if (_debugMode && _debugTimer >= _debugDuration)
             {
-                Debug.LogWarning(BTDebugger.DrawTree(_rTree));
+                Debug.LogWarning(BTDebugger.DrawTree(_rTree.SerialNumber, _rTree));
                 _debugTimer = 0f;
             }
             _debugTimer += Time.deltaTime;
@@ -64,7 +64,7 @@ namespace BehaviorTree
             _bTRunner?.Abort();
         }
         // Set context programmatically if not assigned via Inspector
-        // !! Must be use before MonoBTRunner.Awake() !! 
+        // !! Must be used before MonoBTRunner.Awake() !!
         protected void SetContext(TContext context)
         {
             if (_context == null)

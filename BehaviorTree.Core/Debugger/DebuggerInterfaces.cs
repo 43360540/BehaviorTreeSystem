@@ -4,8 +4,9 @@ namespace BehaviorTree
 {
     public interface IReadOnlyNode
     {
+        int SerialNumber { get; }
         string Name { get; }
-        NodeStatus Status { get; }
-        IReadOnlyList<IReadOnlyNode> SubNodes { get; }
+        string DisplayInfo { get; }
+        IReadOnlyList<IReadOnlyNode>? SubNodes { get; }
     }
 }

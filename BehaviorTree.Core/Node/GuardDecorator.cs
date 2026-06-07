@@ -16,7 +16,10 @@ namespace BehaviorTree
         public bool CanEnter(TContext ctx, float dt)
         {
             _cachedResult = _condition.Evaluate(ctx, dt);
-            DisplayStatus = _cachedResult.Value ? NodeStatus.Success : NodeStatus.Failure;
+
+            Info = _cachedResult.Value ? "Allowed" : "Denied";
+            UpdateTickedCycle();
+
             return _cachedResult.Value;
         }
 

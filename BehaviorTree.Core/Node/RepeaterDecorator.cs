@@ -22,6 +22,8 @@ namespace BehaviorTree
 
         protected override NodeStatus OnTick(TContext ctx, float dt)
         {
+            Info = _times == null ? "Unlimited" : $"{_currentTimes} / {_times} times";
+
             var status = Child.Tick(ctx);
             if (status == NodeStatus.Success)
             {

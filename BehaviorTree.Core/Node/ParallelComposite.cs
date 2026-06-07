@@ -29,6 +29,8 @@ namespace BehaviorTree
 
                 if (_statuses[i] == NodeStatus.Failure)
                 {
+                    Info = NodeStatus.Failure.ToString();
+
                     AbortAllChildren(ctx);
                     return NodeStatus.Failure;
                 }
@@ -37,7 +39,10 @@ namespace BehaviorTree
                     hasRunning = true;
             }
 
-            return hasRunning ? NodeStatus.Running : NodeStatus.Success;
+            var status = hasRunning ? NodeStatus.Running : NodeStatus.Success;
+            Info = status.ToString();
+
+            return status;
         }
 
         protected override void OnAbort(TContext ctx)

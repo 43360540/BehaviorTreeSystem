@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BehaviorTree
 {
-    public abstract class NodeBase<TContext> : INode<TContext>
+    public abstract class NodeBase<TContext> : INode<TContext>, IReadOnlyNode
     {
         private static string CleanName(string name)
         {
@@ -11,9 +13,12 @@ namespace BehaviorTree
         }
 
         protected string Name { get; }
-        protected NodeStatus DisplayStatus { get; set; } = NodeStatus.None;
+        protected string Info { get; set; } = "";
+        protected INode<TContext>[]? ChildNodes { get; set; } = null;
+        protected int LastTickedCycle { get; private set; } = 0;
         protected float? DeltaTime { get; private set; }
 
+        private int _tickCycle = 0;
         private NodeStatus _lastStatus = NodeStatus.None;
 
         public NodeBase(string? name) =>
@@ -21,13 +26,17 @@ namespace BehaviorTree
 
         public void TimeElapse(float dt)
         {
+            _tickCycle++;
             DeltaTime = dt;
             OnTimeElapse(dt);
         }
+
         public NodeStatus Tick(TContext ctx)
         {
             if (DeltaTime == null)
                 throw new InvalidOperationException("TimeElapse() must be called before Tick().");
+
+            LastTickedCycle = _tickCycle;
 
             if (_lastStatus == NodeStatus.None)
             {
@@ -39,7 +48,6 @@ namespace BehaviorTree
             if (status == NodeStatus.None)
                 throw new InvalidOperationException("OnTick must not return NodeStatus.None.");
             _lastStatus = status;
-            DisplayStatus = status;
 
             if (_lastStatus != NodeStatus.Running)
             {
@@ -54,7 +62,6 @@ namespace BehaviorTree
         {
             if (_lastStatus == NodeStatus.None)
                 return;
-            DisplayStatus = NodeStatus.None;
             OnAbort(ctx);
             Reset();
         }
@@ -64,6 +71,8 @@ namespace BehaviorTree
             _lastStatus = NodeStatus.None;
             OnReset();
         }
+
+        protected void UpdateTickedCycle() => LastTickedCycle = _tickCycle;
 
         protected virtual void OnTimeElapse(float dt) { }
 
@@ -76,5 +85,10 @@ namespace BehaviorTree
         protected virtual void OnAbort(TContext ctx) { }
 
         protected virtual void OnReset() { }
+
+        int IReadOnlyNode.SerialNumber => LastTickedCycle;
+        string IReadOnlyNode.Name => Name;
+        string IReadOnlyNode.DisplayInfo => Info;
+        IReadOnlyList<IReadOnlyNode>? IReadOnlyNode.SubNodes => ChildNodes?.OfType<IReadOnlyNode>().ToArray();
     }
 }

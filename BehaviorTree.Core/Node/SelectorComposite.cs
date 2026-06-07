@@ -43,9 +43,14 @@ namespace BehaviorTree
                 if (status == NodeStatus.Failure)
                     continue;
 
+                Info = status.ToString();
+
                 return status;
             }
             prev?.Abort(ctx);
+
+            Info = NodeStatus.Failure.ToString();
+
             return NodeStatus.Failure;
         }
 
